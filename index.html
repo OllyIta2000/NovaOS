@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Internet OS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg1:#0e131c; --bg2:#1a212d; --panel:#1b222e; --panel2:#232b39; --field:#343d4e; --field2:#3d4659;
+  --line:rgba(255,255,255,.07); --text:#e6eaf2; --mute:#98a2b5; --accent:#7b8499;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;min-height:100%}
+body{font-family:Inter,system-ui,Segoe UI,sans-serif;color:var(--text);font-size:14px;
+  background:linear-gradient(135deg,var(--bg2) 0%,var(--bg1) 70%) fixed;padding-bottom:170px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{background:linear-gradient(180deg,#212835,#1a202b);border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.btn{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:600;color:#dfe4ee;transition:background .15s}
+.btn:hover{background:var(--field2)}
+.btn.on,.btn.primary{background:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.1)}
+.field{background:var(--field);border:1px solid transparent;border-radius:12px;padding:11px 14px;width:100%;min-width:0}
+.field::placeholder{color:#8b95a8}
+select.field{cursor:pointer}
+.wrap{display:grid;grid-template-columns:minmax(300px,500px) minmax(0,1fr);gap:22px;max-width:1100px;margin:0 auto;padding:16px 20px}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+/* clock */
+.clock{padding:22px 16px;text-align:center}
+.time{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:clamp(44px,8vw,68px);display:flex;justify-content:center;align-items:baseline;gap:.35em}
+.time .colon{color:var(--mute);opacity:.8}
+.time .ampm{font-size:.3em;letter-spacing:.2em;color:var(--mute)}
+.date{color:var(--mute);margin-top:4px}
+.row{display:flex;gap:10px;align-items:center}
+.box{padding:14px}
+/* currency */
+.cur{display:grid;gap:8px}
+.cur .row select{width:76px;flex:none}
+.cur .note{color:var(--mute);font-size:12px;line-height:1.4;margin:4px 2px 0}
+.cur .rate{display:flex;align-items:center;gap:8px;color:var(--mute);font-size:12px;flex-wrap:wrap}
+.cur .rate input{width:110px;padding:6px 10px}
+/* stopwatch */
+.sw .tabs{display:flex;justify-content:center;gap:8px;margin-bottom:10px}
+.sw .tabs .btn{padding:8px 14px;font-size:13px}
+.sw .tabs .icon{width:40px;padding:8px 0}
+.disp{background:var(--field);border-radius:14px;height:68px;display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:32px;gap:6px}
+.disp.done{animation:flash .6s infinite alternate}
+@keyframes flash{to{background:var(--accent)}}
+.disp input{width:2.2em;background:transparent;border:0;border-bottom:2px solid var(--mute);text-align:center;font:inherit;color:inherit;padding:0}
+.gear{align-self:center;width:44px;height:44px;border-radius:50%;background:var(--panel);border:1px solid var(--line);font-size:18px}
+/* shortcuts */
+.grid{padding:18px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:14px 6px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;padding:4px;text-decoration:none;color:#c9d0de;font-size:13px;font-weight:500;border-radius:12px}
+.tile:hover .ic{background:#252d3b}
+.ic{width:58px;height:58px;border-radius:14px;background:#1d2430;border:1px solid var(--line);display:grid;place-items:center;transition:background .15s}
+.ic i{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:16px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.tile span{max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.editing .tile .ic{border:1px dashed var(--accent)}
+.editing .tile .ic::after{content:"✎";position:absolute;margin:-44px -44px 0 0;font-size:11px;background:var(--accent);color:#fff;border-radius:50%;width:18px;height:18px;display:grid;place-items:center}
+.ic{position:relative}
+.actions{display:flex;justify-content:flex-end;gap:12px}
+.empty{grid-column:1/-1;color:var(--mute);text-align:center;padding:24px}
+/* dock */
+.dock{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(20,26,36,.92);backdrop-filter:blur(8px);border-top:1px solid var(--line);z-index:5}
+.dockin{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:10px;align-items:center}
+.dockrow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
+.pill{display:flex;gap:4px;padding:6px 10px;background:linear-gradient(180deg,#252d3b,#1f2632);border:1px solid var(--line);border-radius:18px;flex-wrap:wrap;justify-content:center}
+.pill.editbox{background:#1d2430}
+.ditem{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;background:none;border:0;color:#c9d0de;font-weight:600;font-size:13px;text-decoration:none}
+.ditem:hover{background:rgba(255,255,255,.07)}
+.ditem i{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:700;color:#fff}
+.editing .ditem{outline:1px dashed var(--accent)}
+/* dialogs */
+dialog{background:#202735;color:var(--text);border:1px solid var(--line);border-radius:18px;padding:20px;width:min(380px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(5,8,14,.65)}
+dialog h2{margin:0 0 14px;font-size:17px}
+dialog label{display:block;font-size:12px;color:var(--mute);margin:10px 0 4px}
+dialog .err{color:#ff8c8c;font-size:12px;min-height:16px;margin-top:6px}
+dialog .foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+dialog input[type=color]{width:100%;height:42px;padding:3px;border-radius:12px;border:0;background:var(--field);cursor:pointer}
+.danger{background:#5a2a2f}.danger:hover{background:#74343b}
+.toast{position:fixed;left:50%;bottom:calc(190px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 18px;border-radius:12px;font-weight:600;z-index:10;display:none}
+.tile{touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;position:relative;cursor:grab}
+.tile.dragging{opacity:.3}
+.tile.drop-into .ic{outline:2px solid var(--accent);outline-offset:2px;transform:scale(1.1)}
+.tile.drop-before{box-shadow:-4px 0 0 var(--accent)}
+.tile.drop-after{box-shadow:4px 0 0 var(--accent)}
+.ghost{position:fixed;z-index:200;pointer-events:none;opacity:.92;transform:scale(1.12);filter:drop-shadow(0 10px 18px rgba(0,0,0,.5));margin:0}
+.ghost.out{opacity:.55}
+.ic.fic{grid-template-columns:repeat(2,1fr);gap:3px;padding:7px;align-content:center}
+.ic.fic i{width:auto;height:auto;aspect-ratio:1;font-size:9px;border-radius:5px}
+#folderDlg{width:min(470px,94vw)}
+#fGrid{padding:6px 0;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));min-height:100px}
+.hintline{margin-right:auto;align-self:center;color:var(--mute);font-size:12px}
+.actions{flex-wrap:wrap}.actions .btn{white-space:nowrap}.hintline{flex:1 1 200px}
+.skema{padding:14px}
+.sk-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sk-head h3{margin:0;font-size:15px;flex:none}
+.sk-now{color:var(--mute);font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sk-scroll{overflow-x:auto}
+.sk-grid{display:grid;grid-template-columns:40px repeat(5,minmax(0,1fr));gap:4px}
+.sk-d{text-align:center;font-weight:600;font-size:12px;color:var(--mute);padding:5px 0;border-radius:8px}
+.sk-d.today{background:var(--accent);color:#fff}
+.sk-t{font-size:11px;color:var(--mute);line-height:1.25;display:flex;flex-direction:column;justify-content:center}
+.sk-c{min-height:38px;border:1px solid var(--line);border-radius:10px;background:var(--field);padding:3px 5px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0;overflow:hidden;font-size:12px;font-weight:600;color:var(--text)}
+.sk-c span,.sk-c small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sk-c small{font-weight:400;opacity:.75;font-size:10px}
+.sk-c.has{background:color-mix(in srgb,var(--c) 32%,var(--field));border-left:3px solid var(--c)}
+.sk-c.now{outline:2px solid var(--accent)}
+.sk-c:hover{filter:brightness(1.15)}
+.sk-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.sk-row .btn{padding:9px 12px}
+html body{display:flex;flex-direction:column;height:100dvh;overflow:hidden;padding-bottom:0}
+.wrap{flex:1;min-height:0;width:100%;grid-template-rows:minmax(0,1fr);padding:12px 20px;gap:18px}
+.col{min-height:0;gap:12px}
+.dock{position:static;flex:none;padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.dockin{gap:6px}.ditem{padding:6px 10px}.pill{padding:3px 8px}
+.clock{padding:12px 16px;flex:none}
+.time{font-size:clamp(34px,6.5vh,60px)}
+.date{font-size:12px;margin-top:0}
+.box{padding:10px}
+.disp{height:48px;font-size:26px}
+.sw .tabs{margin-bottom:8px}
+.skema{flex:1 1 0;min-height:150px;display:flex;flex-direction:column;padding:10px 12px}
+.sk-head{margin-bottom:6px}
+.sk-scroll{flex:1;min-height:0;overflow:auto}
+.sk-grid{height:100%;grid-template-rows:auto;grid-auto-rows:minmax(24px,1fr)}
+.sk-c{min-height:0;padding:2px 5px;font-size:11px}
+.gear{flex:none;width:36px;height:36px}
+.grid{padding:12px 10px;gap:8px 4px;min-height:0;overflow:auto;flex:0 1 auto}
+.ic{width:52px;height:52px}
+.tile{gap:5px;font-size:12px}
+.tools{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+.tools textarea{resize:none;height:100%;min-height:0}
+.calc{display:flex;flex-direction:column;gap:6px;min-height:0}
+.calc .field{padding:6px 10px;text-align:right;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:16px;flex:none}
+.ck{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(0,1fr);gap:4px}
+.ck button{border:0;border-radius:8px;background:var(--field);font-weight:600;padding:0;min-height:0}
+.ck button:hover{background:var(--field2)}.ck button.op{background:var(--field2)}.ck button.eq{background:var(--accent);color:#fff}
+@media (max-height:760px){.tools{display:none}}
+@media (max-width:820px),(max-height:560px){html body{height:auto;min-height:100dvh;overflow:auto}.wrap{grid-template-rows:none}.dock{position:sticky;bottom:0}.skema{flex:none;min-height:360px}.tools{display:grid;min-height:260px}.grid{overflow:visible}}
+:root[data-theme="light"]{color-scheme:light;--bg1:#e9edf4;--bg2:#f7f9fc;--panel:#fff;--panel2:#eef1f6;--field:#e3e8f0;--field2:#d6dce8;--line:rgba(20,30,50,.12);--text:#1b2230;--mute:#5d6880}
+[data-theme="light"] .panel{background:linear-gradient(180deg,#fff,#f3f6fb);box-shadow:0 8px 24px rgba(30,45,80,.12)}
+[data-theme="light"] .btn{color:#1b2230}
+[data-theme="light"] .btn.on,[data-theme="light"] .btn.primary{color:#fff}
+[data-theme="light"] .danger,[data-theme="light"] .danger:hover{background:#f3c9cd;color:#6b1c24}
+[data-theme="light"] .field::placeholder{color:#7a859a}
+[data-theme="light"] .ic{background:#f1f4f9}
+[data-theme="light"] .tile:hover .ic{background:#e6ebf3}
+[data-theme="light"] .tile,[data-theme="light"] .ditem{color:#2a3345}
+[data-theme="light"] .dock{background:rgba(247,249,252,.94)}
+[data-theme="light"] .pill{background:linear-gradient(180deg,#fff,#f1f4f9)}
+[data-theme="light"] .pill.editbox{background:#e9edf4}
+[data-theme="light"] .ditem:hover{background:rgba(20,30,50,.07)}
+[data-theme="light"] dialog{background:#fff}
+[data-theme="light"] .gear{background:#fff}
+@media (max-width:820px){.wrap{grid-template-columns:1fr}body{padding-bottom:230px}}
+@media (prefers-reduced-motion:reduce){.disp.done{animation:none;background:var(--accent)}}
+</style>
+</head>
+<body>
+<main class="wrap" id="app">
+  <section class="col">
+    <div class="panel clock" aria-live="off">
+      <div class="time"><span id="hm"></span><span class="ampm" id="ap"></span></div>
+      <div class="date" id="date"></div>
+    </div>
+
+    <form class="panel box row" id="searchForm">
+      <input class="field" id="q" placeholder="Search the web..." aria-label="Search the web" autocomplete="off">
+      <select class="field" id="engine" aria-label="Search engine" style="width:130px;flex:none"></select>
+      <button class="btn" type="submit">Search</button>
+    </form>
+
+
+    <div class="panel skema">
+      <div class="sk-head"><h3 id="skTitle">Timetable</h3><span class="sk-now" id="skNow"></span><button class="btn" id="skEditBtn" style="padding:6px 12px;font-size:12px;white-space:nowrap">Subjects &amp; times</button></div>
+      <div class="sk-scroll"><div class="sk-grid" id="skGrid"></div></div>
+    </div>
+
+    <div class="panel box sw">
+      <div class="tabs">
+        <button class="btn on" id="tabSw">Stopwatch</button>
+        <button class="btn" id="tabTm">Timer</button>
+        <button class="btn icon" id="go" aria-label="Start">▶</button>
+        <button class="btn icon" id="rst" aria-label="Reset">↻</button>
+      </div>
+      <div class="disp" id="disp" role="timer"></div>
+    </div>
+
+    <button class="gear" id="gear" aria-label="Settings">⚙</button>
+  </section>
+
+  <section class="col">
+    <div class="panel grid" id="grid"></div>
+    <div class="actions">
+      <span class="hintline" id="dragHint">Hold and drag to move · drop on another app to make a folder</span>
+      <button class="btn" id="editGrid">Edit</button>
+      <button class="btn" id="newFolder">New folder</button>
+      <button class="btn primary" id="newGrid">New</button>
+    </div>
+    <div class="panel tools" id="tools">
+      <textarea class="field" id="notes" aria-label="Quick notes" placeholder="Quick notes..." spellcheck="false"></textarea>
+      <div class="calc"><input class="field" id="cd" inputmode="decimal" aria-label="Calculator" autocomplete="off" placeholder="0"><div class="ck" id="ck"></div></div>
+    </div>
+
+  </section>
+</main>
+
+<nav class="dock" aria-label="Dock"><div class="dockin" id="dock"></div></nav>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="skCellDlg">
+  <h2 id="skCellTitle"></h2>
+  <label for="skSub">Subject</label><select class="field" id="skSub"></select>
+  <label for="skRoom">Room / note</label><input class="field" id="skRoom" maxlength="24">
+  <div class="foot"><button class="btn danger" id="skClear">Clear</button><button class="btn" id="skCancel">Cancel</button><button class="btn primary" id="skSave">Save</button></div>
+</dialog>
+<dialog id="skDlg" style="width:min(460px,94vw);max-height:90vh;overflow:auto">
+  <h2 id="skSubsH">Subjects</h2><div id="skSubs"></div><button class="btn" id="skAddSub">Add subject</button>
+  <h2 id="skTimesH" style="margin-top:18px">Lesson times</h2><div id="skPer"></div><button class="btn" id="skAddPer">Add lesson</button>
+  <div class="foot"><button class="btn primary" id="skDone">Done</button></div>
+</dialog>
+
+<dialog id="folderDlg">
+  <input class="field" id="fName" maxlength="24" aria-label="Folder name" style="font-weight:600;font-size:16px;margin-bottom:12px">
+  <div class="grid" id="fGrid"></div>
+  <div class="foot"><button class="btn danger" id="fDel">Ungroup</button><button class="btn" id="fAdd">Add app</button><button class="btn primary" id="fDone" autofocus>Done</button></div>
+</dialog>
+
+<dialog id="itemDlg">
+  <form method="dialog" id="itemForm">
+    <h2 id="itemTitle">New shortcut</h2>
+    <label for="iName">Name</label><input class="field" id="iName" maxlength="20" required>
+    <label for="iUrl">Website address</label><input class="field" id="iUrl" placeholder="example.com" required>
+    <label for="iColor">Icon color</label><input type="color" id="iColor">
+    <div id="groupBox"><label for="iGroup">Dock section</label>
+      <select class="field" id="iGroup"><option value="web">Web tools</option><option value="ai">AI tools</option><option value="write">Writing</option></select></div>
+    <div class="err" id="iErr"></div>
+    <div class="foot"><button type="button" class="btn danger" id="iDel">Delete</button><button type="button" class="btn" id="iCancel">Cancel</button><button class="btn primary" type="submit">Save</button></div>
+  </form>
+</dialog>
+
+<dialog id="setDlg" style="max-height:90vh;overflow:auto">
+  <h2 id="sTitle">Settings</h2>
+  <label for="sTheme">Theme</label>
+  <select class="field" id="sTheme"><option value="dark"></option><option value="light"></option><option value="system"></option></select>
+  <label for="sLang">Language</label>
+  <select class="field" id="sLang"><option value="en">English</option><option value="da">Dansk</option></select>
+  <label for="sTz">Time zone</label>
+  <select class="field" id="sTz"></select>
+  <label for="sHour">Clock format</label>
+  <select class="field" id="sHour"><option value="12"></option><option value="24"></option></select>
+  <label for="sAcc">Accent color</label><input type="color" id="sAcc">
+  <p id="sHint" style="color:var(--mute);margin:12px 0 0;font-size:13px"></p>
+  <div class="foot"><button class="btn danger" id="sReset">Reset to default</button><button class="btn primary" id="sClose">Done</button></div>
+</dialog>
+
+<script>
+"use strict";
+const KEY = "internetOS.v1";
+const $ = id => document.getElementById(id);
+const D = (name,url,color)=>({name,url,color});
+const DEFAULTS = {
+  accent:"#7b8499", theme:"dark", lang:"en", tz:"auto", skema:{subjects:[{id:"dansk",name:"Dansk",color:"#e5484d"},{id:"mat",name:"Matematik",color:"#3b82f6"},{id:"eng",name:"Engelsk",color:"#8b5cf6"},{id:"tys",name:"Tysk",color:"#f59e0b"},{id:"fys",name:"Fysik/kemi",color:"#10b981"},{id:"bio",name:"Biologi",color:"#22c55e"},{id:"geo",name:"Geografi",color:"#06b6d4"},{id:"his",name:"Historie",color:"#a16207"},{id:"sam",name:"Samfundsfag",color:"#ec4899"},{id:"idr",name:"Idræt",color:"#f97316"}],periods:[{id:"p1",start:"08:00",end:"08:45"},{id:"p2",start:"08:45",end:"09:30"},{id:"p3",start:"09:50",end:"10:35"},{id:"p4",start:"10:35",end:"11:20"},{id:"p5",start:"11:50",end:"12:35"},{id:"p6",start:"12:35",end:"13:20"}],cells:{}}, rateDate:{},  hour12:true, engine:"google", from:"EUR", to:"HUF", amount:"1", rates:{},
+  shortcuts:[D("YouTube","https://youtube.com","#ff0000"),D("Gmail","https://mail.google.com","#ea4335"),D("Github","https://github.com","#24292f"),D("Facebook","https://facebook.com","#1877f2"),
+    D("Messenger","https://messenger.com","#0a7cff"),D("Insta","https://instagram.com","#d62976"),D("Whiteboard","https://miro.com","#f5c400"),D("YTDL","https://youtube.com","#0a84ff"),
+    D("Wormhole","https://wormhole.app","#d6177a"),D("Drive","https://drive.google.com","#1fa463"),D("Yt music","https://music.youtube.com","#e5231b"),D("Netflix","https://netflix.com","#b20710"),
+    D("Temp Mail","https://temp-mail.org","#14a58b"),D("Keep","https://keep.google.com","#fbbc04"),D("n8n","https://n8n.io","#ea4b71"),D("Soundcloud","https://soundcloud.com","#ff5500")],
+  dock:[{...D("Earth","https://earth.google.com","#3b82f6"),group:"web"},{...D("Maps","https://maps.google.com","#34a853"),group:"web"},{...D("Calendar","https://calendar.google.com","#1a73e8"),group:"web"},{...D("Photos","https://photos.google.com","#ea4335"),group:"web"},
+    {...D("ChatGPT","https://chatgpt.com","#10a37f"),group:"ai"},{...D("Gemini","https://gemini.google.com","#4285f4"),group:"ai"},{...D("AI studio","https://aistudio.google.com","#1a73e8"),group:"ai"},{...D("MGX","https://mgx.dev","#444"),group:"ai"},
+    {...D("Grok","https://grok.com","#555"),group:"ai"},{...D("Blackbox","https://blackbox.ai","#222"),group:"ai"},{...D("Perplexity","https://perplexity.ai","#20808d"),group:"ai"},
+    {...D("DeepL","https://deepl.com","#0f2b46"),group:"write"},{...D("Quillbot","https://quillbot.com","#2e9e4f"),group:"write"}]
+};
+const ENGINES = {google:["Google","https://www.google.com/search?q="],bing:["Bing","https://www.bing.com/search?q="],duckduckgo:["DuckDuckGo","https://duckduckgo.com/?q="],brave:["Brave","https://search.brave.com/search?q="],ecosia:["Ecosia","https://www.ecosia.org/search?q="]};
+function searchUrl(k,q){
+  const e=encodeURIComponent(q);
+  if(k==="google") return `https://www.google.com/search?q=${e}&oq=${e}&source=hp&sclient=gws-wiz&uact=5&hl=${S.lang==="da"?"da":"en"}`;
+  return ENGINES[k][1]+e;
+}
+const CURRENCIES = ["EUR","USD","DKK","GBP","HUF","SEK","NOK","PLN","CHF","JPY","CAD","AUD"];
+
+/* ---------- storage ---------- */
+let S;
+function load(){
+  try{ const raw = localStorage.getItem(KEY); if(raw){ S = Object.assign(structuredClone(DEFAULTS), JSON.parse(raw)); return; } }catch(e){}
+  S = structuredClone(DEFAULTS);
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.style.display="block"; clearTimeout(toast.t); toast.t=setTimeout(()=>t.style.display="none",3500); }
+
+/* ---------- helpers ---------- */
+function cleanUrl(v){
+  v = v.trim(); if(!v) return null;
+  if(!/^https?:\/\//i.test(v)) v = "https://"+v;
+  try{ const u=new URL(v); if(!/^https?:$/.test(u.protocol) || !u.hostname.includes(".")) return null; return u.href; }catch(e){ return null; }
+}
+function icon(it,cls){ const i=document.createElement("i"); i.style.background=it.color||"#555"; i.textContent=(it.name||"?").trim().charAt(0).toUpperCase(); return i; }
+function applyAccent(){ document.documentElement.style.setProperty("--accent",S.accent); }
+
+/* ---------- clock ---------- */
+function tick(){
+  const d=new Date(), tz=S.tz==="auto"?undefined:S.tz; let parts, dateStr;
+  try{
+    parts=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:S.hour12?"numeric":"2-digit",minute:"2-digit",hourCycle:S.hour12?"h12":"h23"}).formatToParts(d);
+    dateStr=new Intl.DateTimeFormat(LOC(),{timeZone:tz,weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(d);
+  }catch(e){ S.tz="auto"; save(); return tick(); }
+  const g=k=>(parts.find(p=>p.type===k)||{}).value||"";
+  $("hm").innerHTML=`${g("hour")}<span class="colon"> : </span>${g("minute")}`;
+  $("ap").textContent=S.hour12?g("dayPeriod"):"";
+  $("date").textContent=dateStr+" · "+(tz||Intl.DateTimeFormat().resolvedOptions().timeZone).replace(/_/g," ");
+}
+const I18N={
+en:{search:"Search the web...",searchBtn:"Search",stopwatch:"Stopwatch",timer:"Timer",start:"Start",pause:"Pause",startTimer:"Start timer",reset:"Reset",edit:"Edit",newBtn:"New",done:"Done",editBar:"Edit Bar",add:"Add",ratePh:"enter rate",
+curNote:"Live rates can’t be loaded in this page, so the rate is one you type in yourself (saved per currency pair). Check a source such as ECB or Google for today’s rate.",
+newShortcut:"New shortcut",editShortcut:"Edit shortcut",newDock:"New dock item",editDock:"Edit dock item",name:"Name",url:"Website address",color:"Icon color",section:"Dock section",web:"Web tools",ai:"AI tools",write:"Writing",del:"Delete",cancel:"Cancel",save:"Save",
+errName:"Enter a name.",errUrl:"That doesn’t look like a valid website address (try example.com).",saved:"Saved",deleted:"Deleted",emptyGrid:"No shortcuts yet. Press <b>New</b> to add one.",
+timerDone:"⏰ Timer finished!",timeUp:"⏰ Time’s up!",notif:"Timer finished",setTime:"Set a time above 0 first.",
+settings:"Settings",theme:"Theme",dark:"Dark",light:"Light",system:"System",lang:"Language",tz:"Time zone",tzAuto:"Automatic (this device)",hourFmt:"Clock format",h12:"12-hour (AM/PM)",h24:"24-hour",accent:"Accent color",
+hint:"Use Edit and New under the shortcut grid, and Edit Bar on the dock, to customize them.",reset2:"Reset to default",confirmReset:"Reset everything (shortcuts, dock, colors, rates) to the defaults? This can’t be undone."},
+da:{search:"Søg på nettet...",searchBtn:"Søg",stopwatch:"Stopur",timer:"Nedtælling",start:"Start",pause:"Pause",startTimer:"Start nedtælling",reset:"Nulstil",edit:"Rediger",newBtn:"Ny",done:"Færdig",editBar:"Rediger bar",add:"Tilføj",ratePh:"indtast kurs",
+curNote:"Live-kurser kan ikke hentes på denne side, så kursen skriver du selv ind (gemmes pr. valutapar). Tjek fx ECB eller Google for dagens kurs.",
+newShortcut:"Ny genvej",editShortcut:"Rediger genvej",newDock:"Nyt dok-element",editDock:"Rediger dok-element",name:"Navn",url:"Hjemmesideadresse",color:"Ikonfarve",section:"Dok-sektion",web:"Webværktøjer",ai:"AI-værktøjer",write:"Skrivning",del:"Slet",cancel:"Annuller",save:"Gem",
+errName:"Skriv et navn.",errUrl:"Det ligner ikke en gyldig hjemmesideadresse (prøv example.com).",saved:"Gemt",deleted:"Slettet",emptyGrid:"Ingen genveje endnu. Tryk på <b>Ny</b> for at tilføje en.",
+timerDone:"⏰ Nedtællingen er færdig!",timeUp:"⏰ Tiden er gået!",notif:"Nedtællingen er færdig",setTime:"Sæt først en tid over 0.",
+settings:"Indstillinger",theme:"Tema",dark:"Mørk",light:"Lys",system:"System",lang:"Sprog",tz:"Tidszone",tzAuto:"Automatisk (denne enhed)",hourFmt:"Urformat",h12:"12 timer (AM/PM)",h24:"24 timer",accent:"Accentfarve",
+hint:"Brug Rediger og Ny under genvejene, og Rediger bar på dokken, til at tilpasse dem.",reset2:"Gendan standard",confirmReset:"Nulstil alt (genveje, dok, farver, kurser) til standard? Det kan ikke fortrydes."}};
+const t=k=>(I18N[S.lang]&&I18N[S.lang][k])||I18N.en[k]||k;
+Object.assign(I18N.en,{folder:"Folder",newFolder:"New folder",ungroup:"Ungroup",addApp:"Add app",folderName:"Folder name",emptyFolder:"Empty folder. Add an app, or drag one in.",dragHint:"Hold and drag to move · drop on another app to make a folder"});
+Object.assign(I18N.da,{folder:"Mappe",newFolder:"Ny mappe",ungroup:"Opløs mappe",addApp:"Tilføj app",folderName:"Mappenavn",emptyFolder:"Tom mappe. Tilføj en app, eller træk en ind.",dragHint:"Hold og træk for at flytte · slip på en anden app for at lave en mappe"});
+const LOC=()=>S.lang==="da"?"da-DK":"en-GB";
+function applyTheme(){ const light=matchMedia("(prefers-color-scheme: light)").matches; document.documentElement.dataset.theme=S.theme==="system"?(light?"light":"dark"):S.theme; }
+function applyLang(){
+  document.documentElement.lang=S.lang;
+  const tx=(sel,k)=>{const e=document.querySelector(sel); if(e) e.textContent=t(k);};
+  $("q").placeholder=t("search"); $("q").setAttribute("aria-label",t("search"));
+  $("rst").setAttribute("aria-label",t("reset")); $("gear").setAttribute("aria-label",t("settings"));
+  [["#searchForm button","searchBtn"],["#tabSw","stopwatch"],["#tabTm","timer"],["#newGrid","newBtn"],[".cur .note","curNote"],
+   ["label[for=iName]","name"],["label[for=iUrl]","url"],["label[for=iColor]","color"],["label[for=iGroup]","section"],["#iDel","del"],["#iCancel","cancel"],["#itemForm button[type=submit]","save"],
+   ["#sTitle","settings"],["label[for=sTheme]","theme"],["label[for=sLang]","lang"],["label[for=sTz]","tz"],["label[for=sHour]","hourFmt"],["label[for=sAcc]","accent"],["#sHint","hint"],["#sReset","reset2"],["#sClose","done"]].forEach(a=>tx(a[0],a[1]));
+  ["web","ai","write"].forEach((k,i)=>$("iGroup").options[i].textContent=t(k));
+  ["dark","light","system"].forEach((k,i)=>$("sTheme").options[i].textContent=t(k));
+  ["h12","h24"].forEach((k,i)=>$("sHour").options[i].textContent=t(k));
+  $("sTz").options[0].textContent=t("tzAuto");
+  $("newFolder").textContent=t("newFolder"); $("dragHint").textContent=t("dragHint"); $("fDel").textContent=t("ungroup"); $("fAdd").textContent=t("addApp"); $("fDone").textContent=t("done"); $("fName").setAttribute("aria-label",t("folderName"));
+  skTr(); skRender(); $("notes").placeholder=t("notesPh");
+  renderGrid(); renderDock(); render(); tick();
+}
+
+/* ---------- search ---------- */
+function initSearch(){
+  $("engine").innerHTML=Object.entries(ENGINES).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("");
+  $("engine").value=S.engine;
+  $("engine").onchange=()=>{S.engine=$("engine").value;save();};
+  $("searchForm").onsubmit=e=>{e.preventDefault(); const q=$("q").value.trim(); if(!q){$("q").focus();return;}
+    { const w=window.open(searchUrl($("engine").value,q),"_blank"); if(w) w.opener=null; else toast(t("popBlocked")); }};
+}
+
+/* ---------- currency ---------- */
+function rateKey(){return S.from+">"+S.to;}
+function getRate(){ if(S.from===S.to) return 1; const r=S.rates[rateKey()]; if(r) return r; const inv=S.rates[S.to+">"+S.from]; return inv?1/inv:null; }
+const num=v=>parseFloat(String(v).replace(",","."));
+const fmt=n=>(Math.round(n*10000)/10000).toString();
+function curRender(){
+  $("rateLbl").textContent=`1 ${S.from} =`+" ";
+  const r=getRate(); $("rate").value=r?fmt(r):""; $("rate").disabled=S.from===S.to;
+  $("rate").placeholder=t("ratePh")+" ("+S.to+")";
+  { const dd=(S.rateDate||{})[rateKey()]; $("rateSt").textContent=dd?t("rateOk")+" "+dd+" (ECB)":""; }
+  fromTop();
+}
+function fromTop(){ const r=getRate(), a=num($("a1").value); S.amount=$("a1").value; save(); $("a2").value=(r&&!isNaN(a))?fmt(a*r):""; }
+function fromBottom(){ const r=getRate(), b=num($("a2").value); $("a1").value=(r&&!isNaN(b))?fmt(b/r):""; S.amount=$("a1").value; save(); }
+function initCurrency(){
+  for(const id of ["c1","c2"]) $(id).innerHTML=CURRENCIES.map(c=>`<option>${c}</option>`).join("");
+  $("c1").value=S.from; $("c2").value=S.to; $("a1").value=S.amount;
+  $("c1").onchange=()=>{S.from=$("c1").value;save();curRender();fetchRate(true);};
+  $("c2").onchange=()=>{S.to=$("c2").value;save();curRender();fetchRate(true);};
+  $("a1").oninput=fromTop; $("a2").oninput=fromBottom;
+  $("rate").oninput=()=>{ const r=num($("rate").value); if(S.rateDate) delete S.rateDate[rateKey()]; $("rateSt").textContent=t("rateManual"); if(r>0){S.rates[rateKey()]=r; delete S.rates[S.to+">"+S.from];} else delete S.rates[rateKey()]; save(); fromTop(); };
+  curRender();
+}
+
+/* ---------- stopwatch & timer ---------- */
+const T={mode:"sw",sw:{run:false,start:0,el:0},tm:{run:false,end:0,rem:300000,done:false},raf:0};
+const pad=n=>String(n).padStart(2,"0");
+function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); [0,.35,.7].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;g.gain.value=.15;o.connect(g);g.connect(c.destination);o.start(c.currentTime+t);o.stop(c.currentTime+t+.2);});}catch(e){} }
+function swMs(){return T.sw.run?T.sw.el+(performance.now()-T.sw.start):T.sw.el;}
+function tmMs(){return T.tm.run?Math.max(0,T.tm.end-performance.now()):T.tm.rem;}
+function finishTimer(){
+  T.tm.run=false; T.tm.rem=0; T.tm.done=true; beep(); toast(t("timerDone"));
+  document.title=t("timeUp");
+  try{ if("Notification" in window && Notification.permission==="granted") new Notification(t("notif")); }catch(e){}
+  render();
+}
+function render(){
+  const d=$("disp"), sw=T.mode==="sw";
+  $("tabSw").classList.toggle("on",sw); $("tabTm").classList.toggle("on",!sw);
+  const run=sw?T.sw.run:T.tm.run; $("go").textContent=run?"❚❚":"▶"; $("go").setAttribute("aria-label",run?t("pause"):(sw?t("start"):t("startTimer")));
+  d.classList.toggle("done",!sw&&T.tm.done);
+  if(sw){ const ms=swMs(), m=Math.floor(ms/60000), s=Math.floor(ms/1000)%60, cs=Math.floor(ms/10)%100;
+    d.textContent=(m?pad(m)+":":"")+(m?pad(s):s)+"."+pad(cs); }
+  else if(!T.tm.run && !T.tm.done && T.tm.rem===T.tm.dur0){ editTimer(d); }
+  else { const ms=Math.ceil(tmMs()/1000), h=Math.floor(ms/3600), m=Math.floor(ms/60)%60, s=ms%60; d.textContent=(h?h+":":"")+pad(m)+":"+pad(s); }
+}
+T.tm.dur0=300000;
+function editTimer(d){
+  if(d.querySelector("input")) return;
+  const tot=Math.round(T.tm.rem/1000), m=Math.floor(tot/60), s=tot%60;
+  d.innerHTML=`<input id="tm" inputmode="numeric" aria-label="Minutes" value="${pad(m)}">:<input id="ts" inputmode="numeric" aria-label="Seconds" value="${pad(s)}">`;
+  const upd=()=>{ const mm=Math.max(0,parseInt($("tm").value)||0), ss=Math.min(59,Math.max(0,parseInt($("ts").value)||0)); T.tm.dur0=T.tm.rem=(mm*60+ss)*1000; };
+  $("tm").oninput=$("ts").oninput=upd;
+  $("tm").onblur=$("ts").onblur=()=>{upd();T.tm.dur0=T.tm.rem; d.innerHTML=""; render();};
+}
+function loop(){ if(T.tm.run && tmMs()<=0) finishTimer(); render(); T.raf=requestAnimationFrame(loop); }
+function go(){
+  if(T.mode==="sw"){ const s=T.sw; if(s.run){s.el+=performance.now()-s.start;s.run=false;} else {s.start=performance.now();s.run=true;} }
+  else { const t=T.tm; if(t.run){t.rem=Math.max(0,t.end-performance.now());t.run=false;}
+    else { if(t.done){t.done=false;document.title="My Internet OS";t.rem=t.dur0;} if(t.rem<=0){toast(t("setTime"));return;}
+      t.end=performance.now()+t.rem; t.run=true; $("disp").innerHTML="";
+      try{ if("Notification" in window && Notification.permission==="default") Notification.requestPermission(); }catch(e){} } }
+  render();
+}
+function reset(){
+  if(T.mode==="sw"){T.sw.run=false;T.sw.el=0;}
+  else {T.tm.run=false;T.tm.done=false;T.tm.rem=T.tm.dur0;document.title="My Internet OS";$("disp").innerHTML="";}
+  render();
+}
+function setMode(m){ T.mode=m; $("disp").innerHTML=""; render(); }
+function initTimers(){
+  $("tabSw").onclick=()=>setMode("sw"); $("tabTm").onclick=()=>setMode("tm");
+  $("go").onclick=go; $("rst").onclick=reset; loop();
+}
+
+/* ---------- shortcuts & dock ---------- */
+const editing={grid:false,dock:false};
+let dlg={kind:"grid",idx:-1};
+function renderGrid(){
+  const g=$("grid"); g.classList.toggle("editing",editing.grid); g.innerHTML="";
+  if(!S.shortcuts.length){ g.innerHTML='<div class="empty">'+t("emptyGrid")+'</div>'; }
+  S.shortcuts.forEach((it,i)=>g.appendChild(makeTile(it,i,"root")));
+  if(curFolder!=null&&S.shortcuts[curFolder]) renderFolder();
+  $("editGrid").textContent=editing.grid?t("done"):t("edit"); $("editGrid").classList.toggle("on",editing.grid);
+}
+let curFolder=null, drag=null, suppress=false;
+const listOf=k=>k==="dock"?S.dock:k==="folder"?S.shortcuts[curFolder].items:S.shortcuts;
+const listFor=s=>s==="root"?S.shortcuts:S.shortcuts[curFolder].items;
+function makeTile(it,i,scope){
+  const folder=it.type==="folder";
+  const a=document.createElement(folder||editing.grid?"button":"a");
+  a.className="tile"; a.dataset.i=i; a.dataset.scope=scope; a.draggable=false;
+  if(folder) a.onclick=()=>openFolder(i);
+  else if(editing.grid) a.onclick=()=>openItem(scope==="root"?"grid":"folder",i);
+  else {a.href=it.url;a.target="_blank";a.rel="noopener noreferrer";}
+  const ic=document.createElement("div"); ic.className="ic";
+  if(folder){ ic.classList.add("fic"); (it.items||[]).slice(0,4).forEach(x=>ic.appendChild(icon(x))); } else ic.appendChild(icon(it));
+  const sp=document.createElement("span"); sp.textContent=it.name; a.append(ic,sp);
+  attachDrag(a); return a;
+}
+function openFolder(i,rename){
+  curFolder=i; $("fName").value=S.shortcuts[i].name; renderFolder();
+  if(!$("folderDlg").open) $("folderDlg").showModal();
+  if(rename){$("fName").focus();$("fName").select();}
+}
+function renderFolder(){
+  const g=$("fGrid"), f=S.shortcuts[curFolder]; g.innerHTML="";
+  g.classList.toggle("editing",editing.grid);
+  if(!f.items.length) g.innerHTML='<div class="empty">'+t("emptyFolder")+'</div>';
+  f.items.forEach((it,i)=>g.appendChild(makeTile(it,i,"folder")));
+}
+function moveWithin(list,from,to,after){ const [x]=list.splice(from,1); let idx=to>from?to-1:to; if(after) idx++; list.splice(idx,0,x); }
+function clearMarks(){ document.querySelectorAll(".drop-into,.drop-before,.drop-after").forEach(e=>e.classList.remove("drop-into","drop-before","drop-after")); }
+const noScroll=e=>e.preventDefault();
+function startDrag(el,x,y){
+  const r=el.getBoundingClientRect(), ghost=el.cloneNode(true);
+  ghost.classList.add("ghost"); ghost.style.cssText=`width:${r.width}px;left:${r.left}px;top:${r.top}px`;
+  (document.querySelector("dialog[open]")||document.body).appendChild(ghost);
+  el.classList.add("dragging"); document.addEventListener("touchmove",noScroll,{passive:false});
+  return {el,ghost,dx:x-r.left,dy:y-r.top,scope:el.dataset.scope,from:+el.dataset.i,drop:null};
+}
+function moveDrag(d,x,y){
+  d.ghost.style.left=(x-d.dx)+"px"; d.ghost.style.top=(y-d.dy)+"px";
+  clearMarks(); d.drop=null; d.ghost.classList.remove("out");
+  const under=document.elementFromPoint(x,y); if(!under) return;
+  const tile=under.closest(".tile[data-scope]");
+  if(tile && tile.dataset.scope===d.scope && tile!==d.el){
+    const r=tile.getBoundingClientRect(), rx=(x-r.left)/r.width, dragged=listFor(d.scope)[d.from];
+    const mode=(d.scope==="root"&&dragged.type!=="folder"&&rx>.28&&rx<.72)?"into":(rx<.5?"before":"after");
+    d.drop={mode,ti:+tile.dataset.i}; tile.classList.add("drop-"+mode); return;
+  }
+  if(d.scope==="folder"){ const fr=$("folderDlg").getBoundingClientRect();
+    if(x<fr.left||x>fr.right||y<fr.top||y>fr.bottom){ d.drop={mode:"out"}; d.ghost.classList.add("out"); } }
+  else if(under.closest("#grid")) d.drop={mode:"end"};
+}
+function endDrag(d,commit){
+  d.ghost.remove(); d.el.classList.remove("dragging"); clearMarks();
+  document.removeEventListener("touchmove",noScroll); drag=null;
+  suppress=true; setTimeout(()=>suppress=false,60);
+  if(commit&&d.drop) applyDrop(d);
+}
+function applyDrop(d){
+  const {mode,ti}=d.drop; let nf=null;
+  if(d.scope==="folder"){
+    const list=S.shortcuts[curFolder].items;
+    if(mode==="out"){ if(S.shortcuts.length>=LIM_ROOT&&list.length>1){toast(t("limitMsg"));return;} const [it]=list.splice(d.from,1); S.shortcuts.push(it); if(!list.length) S.shortcuts.splice(curFolder,1); curFolder=null; $("folderDlg").close(); }
+    else moveWithin(list,d.from,ti,mode==="after");
+  } else {
+    const list=S.shortcuts;
+    if(mode==="end"){ const [it]=list.splice(d.from,1); list.push(it); }
+    else if(mode==="into"){
+      const target=list[ti], item=list[d.from];
+      if(target.type==="folder"){ if(target.items.length>=LIM_FOLDER){toast(t("folderFull"));return;} list.splice(d.from,1); target.items.push(item); }
+      else { list.splice(d.from,1); nf=ti>d.from?ti-1:ti; list[nf]={type:"folder",name:t("folder"),items:[target,item]}; }
+    } else moveWithin(list,d.from,ti,mode==="after");
+  }
+  save(); renderGrid(); if(nf!=null) openFolder(nf,true);
+}
+function attachDrag(a){
+  a.addEventListener("contextmenu",e=>e.preventDefault());
+  a.addEventListener("dragstart",e=>e.preventDefault());
+  a.addEventListener("pointerdown",e=>{
+    if(e.button!==0||drag) return;
+    let lx=e.clientX, ly=e.clientY, active=false; const sx=lx, sy=ly, touch=e.pointerType!=="mouse";
+    const begin=()=>{ if(active) return; active=true; drag=startDrag(a,lx,ly); };
+    const timer=setTimeout(begin,380);
+    const cleanup=()=>{ clearTimeout(timer); document.removeEventListener("pointermove",mv); document.removeEventListener("pointerup",up); document.removeEventListener("pointercancel",cancel); };
+    const mv=ev=>{ lx=ev.clientX; ly=ev.clientY;
+      if(!active && Math.hypot(lx-sx,ly-sy)>7){ if(touch) cleanup(); else begin(); }
+      if(active) moveDrag(drag,lx,ly); };
+    const up=()=>{ cleanup(); if(active) endDrag(drag,true); };
+    const cancel=()=>{ cleanup(); if(active) endDrag(drag,false); };
+    document.addEventListener("pointermove",mv); document.addEventListener("pointerup",up); document.addEventListener("pointercancel",cancel);
+  });
+}
+document.addEventListener("click",e=>{ if(suppress){ e.preventDefault(); e.stopPropagation(); } },true);
+Object.assign(I18N.en,{curNote:"Tap Update live to fetch today’s rate (ECB data). If it can’t connect, type a rate yourself; it’s saved per currency pair.",rateBtn:"Update live",rateLoading:"Updating…",rateOk:"Live rate from",rateManual:"Manual rate",rateFail:"Couldn’t reach the rate service from here. Live rates work when the page is saved as a file on your computer. Type a rate meanwhile.",
+skTitle:"Timetable",skEdit:"Subjects & times",skNow:"Now",skNext:"Next",skNone:"Tap a box to add a subject",skWeekend:"No lessons today",skFree:"— Free —",skSubject:"Subject",skRoom:"Room / note",skClear:"Clear",skSubs:"Subjects",skTimes:"Lesson times",skAddSub:"Add subject",skAddPer:"Add lesson",skNewSub:"New subject"});
+Object.assign(I18N.da,{curNote:"Tryk Opdater live for at hente dagens kurs (ECB-data). Hvis det ikke kan forbinde, så skriv en kurs selv; den gemmes pr. valutapar.",rateBtn:"Opdater live",rateLoading:"Opdaterer…",rateOk:"Live kurs fra",rateManual:"Manuel kurs",rateFail:"Kunne ikke nå kursservicen herfra. Live kurser virker, når siden er gemt som fil på din computer. Skriv en kurs imens.",
+skTitle:"Skema",skEdit:"Fag og tider",skNow:"Nu",skNext:"Næste",skNone:"Tryk på et felt for at tilføje et fag",skWeekend:"Ingen timer i dag",skFree:"— Fri —",skSubject:"Fag",skRoom:"Lokale / note",skClear:"Ryd",skSubs:"Fag",skTimes:"Timer",skAddSub:"Tilføj fag",skAddPer:"Tilføj time",skNewSub:"Nyt fag"});
+async function fetchRate(silent){
+  const from=S.from, to=S.to, st=$("rateSt"); if(from===to) return;
+  if(!silent) st.textContent=t("rateLoading");
+  const urls=[`https://api.frankfurter.dev/v1/latest?base=${from}&symbols=${to}`,`https://api.frankfurter.app/latest?from=${from}&to=${to}`];
+  for(const u of urls){
+    try{
+      const c=new AbortController(), to_=setTimeout(()=>c.abort(),8000);
+      const r=await fetch(u,{signal:c.signal}); clearTimeout(to_); if(!r.ok) continue;
+      const j=await r.json(), v=j.rates&&j.rates[to]; if(!(v>0)) continue;
+      if(S.from!==from||S.to!==to) return;
+      S.rates[from+">"+to]=v; delete S.rates[to+">"+from]; (S.rateDate=S.rateDate||{})[from+">"+to]=j.date; save(); curRender(); return;
+    }catch(e){}
+  }
+  if(!silent) st.textContent=t("rateFail");
+}
+const dayName=(d,w)=>new Date(2024,0,1+d).toLocaleDateString(LOC(),{weekday:w});
+const tmin=s=>{const [h,m]=String(s).split(":").map(Number);return (h||0)*60+(m||0);};
+const fmtT=m=>pad(Math.floor(m/60)%24)+":"+pad(m%60);
+const mk=(tag,cls,txt)=>{const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e;};
+const subOf=c=>c&&S.skema.subjects.find(s=>s.id===c.sid);
+const lessonTxt=(s,c)=>s.name+(c.room?" ("+c.room+")":"");
+function skRender(){
+  const K=S.skema, g=$("skGrid"); g.innerHTML="";
+  const now=new Date(), wd=(now.getDay()+6)%7, mins=now.getHours()*60+now.getMinutes();
+  g.appendChild(mk("div"));
+  for(let d=0;d<5;d++) g.appendChild(mk("div","sk-d"+(d===wd?" today":""),dayName(d,"short")));
+  let cur=null,next=null;
+  K.periods.forEach(p=>{
+    const tc=mk("div","sk-t"); tc.append(mk("span",null,p.start),mk("span",null,p.end)); g.appendChild(tc);
+    const live=mins>=tmin(p.start)&&mins<tmin(p.end);
+    for(let d=0;d<5;d++){
+      const c=K.cells[d+"-"+p.id], s=subOf(c);
+      const b=mk("button","sk-c"+(s?" has":"")+(d===wd&&live?" now":"")); b.type="button";
+      b.setAttribute("aria-label",dayName(d,"long")+" "+p.start+"–"+p.end+(s?": "+s.name:""));
+      if(s){ b.style.setProperty("--c",s.color); b.appendChild(mk("span",null,s.name)); if(c.room) b.appendChild(mk("small",null,c.room));
+        if(d===wd){ if(live) cur=lessonTxt(s,c); else if(tmin(p.start)>mins&&!next) next=p.start+" "+lessonTxt(s,c); } }
+      b.onclick=()=>skOpenCell(d,p.id); g.appendChild(b);
+    }
+  });
+  const any=Object.keys(K.cells).length;
+  $("skNow").textContent=[cur&&t("skNow")+": "+cur,next&&t("skNext")+": "+next].filter(Boolean).join(" · ")||(!any?t("skNone"):(wd>4?t("skWeekend"):""));
+}
+let skCell=null;
+function skOpenCell(d,pid){
+  const K=S.skema, p=K.periods.find(x=>x.id===pid), c=K.cells[d+"-"+pid]||{}; skCell={d,pid};
+  $("skCellTitle").textContent=dayName(d,"long")+" · "+p.start+"–"+p.end;
+  const sel=$("skSub"); sel.innerHTML="";
+  [{id:"",name:t("skFree")}].concat(K.subjects).forEach(s=>{const o=mk("option",null,s.name); o.value=s.id; sel.appendChild(o);});
+  sel.value=c.sid||""; $("skRoom").value=c.room||""; $("skCellDlg").showModal();
+}
+function skManageRender(){
+  const K=S.skema, sb=$("skSubs"), pb=$("skPer"); sb.innerHTML=""; pb.innerHTML="";
+  K.subjects.forEach(s=>{
+    const row=mk("div","sk-row"), col=mk("input"), nm=mk("input","field"), del=mk("button","btn","✕");
+    col.type="color"; col.value=s.color; col.style.cssText="width:44px;height:40px;flex:none;padding:3px;border:0;border-radius:10px;background:var(--field);cursor:pointer"; col.setAttribute("aria-label",t("color"));
+    nm.value=s.name; nm.maxLength=20; nm.setAttribute("aria-label",t("skSubject"));
+    col.oninput=()=>{s.color=col.value;save();skRender();}; nm.oninput=()=>{s.name=nm.value;save();skRender();};
+    del.type="button"; del.setAttribute("aria-label",t("del"));
+    del.onclick=()=>{K.subjects=K.subjects.filter(x=>x!==s); Object.keys(K.cells).forEach(k=>{if(K.cells[k].sid===s.id) delete K.cells[k];}); save(); skRender(); skManageRender();};
+    row.append(col,nm,del); sb.appendChild(row);
+  });
+  K.periods.forEach(p=>{
+    const row=mk("div","sk-row"), a=mk("input","field"), b=mk("input","field"), del=mk("button","btn","✕");
+    a.type=b.type="time"; a.value=p.start; b.value=p.end;
+    a.oninput=()=>{p.start=a.value||p.start;save();skRender();}; b.oninput=()=>{p.end=b.value||p.end;save();skRender();};
+    del.type="button"; del.setAttribute("aria-label",t("del"));
+    del.onclick=()=>{K.periods=K.periods.filter(x=>x!==p); Object.keys(K.cells).forEach(k=>{if(k.endsWith("-"+p.id)) delete K.cells[k];}); save(); skRender(); skManageRender();};
+    row.append(a,mk("span",null,"–"),b,del); pb.appendChild(row);
+  });
+}
+function skTr(){
+  [["#skTitle","skTitle"],["#skEditBtn","skEdit"],["label[for=skSub]","skSubject"],["label[for=skRoom]","skRoom"],["#skClear","skClear"],["#skCancel","cancel"],["#skSave","save"],["#skSubsH","skSubs"],["#skTimesH","skTimes"],["#skAddSub","skAddSub"],["#skAddPer","skAddPer"],["#skDone","done"],["#rateBtn","rateBtn"]].forEach(a=>{const e=document.querySelector(a[0]); if(e) e.textContent=t(a[1]);});
+}
+function skInit(){
+  const K=()=>S.skema;
+  $("skEditBtn").onclick=()=>{skManageRender();$("skDlg").showModal();};
+  $("skDone").onclick=()=>$("skDlg").close();
+  $("skDlg").addEventListener("close",()=>{K().periods.sort((a,b)=>tmin(a.start)-tmin(b.start));save();skRender();});
+  $("skAddSub").onclick=()=>{const pal=["#ef4444","#3b82f6","#a855f7","#f59e0b","#14b8a6","#ec4899","#84cc16"]; K().subjects.push({id:"s"+Date.now(),name:t("skNewSub"),color:pal[K().subjects.length%pal.length]}); save(); skManageRender(); const l=$("skSubs").lastChild; if(l){const f=l.querySelector(".field");f.focus();f.select();}};
+  $("skAddPer").onclick=()=>{const ps=K().periods, last=ps[ps.length-1], s=last?tmin(last.end):480; ps.push({id:"p"+Date.now(),start:fmtT(s),end:fmtT(s+45)}); save(); skRender(); skManageRender();};
+  $("skCancel").onclick=()=>$("skCellDlg").close();
+  $("skSave").onclick=()=>{const key=skCell.d+"-"+skCell.pid, sid=$("skSub").value; if(!sid) delete K().cells[key]; else K().cells[key]={sid,room:$("skRoom").value.trim()}; save(); skRender(); $("skCellDlg").close();};
+  $("skClear").onclick=()=>{delete K().cells[skCell.d+"-"+skCell.pid]; save(); skRender(); $("skCellDlg").close();};
+
+}
+const LIM_ROOT=20, LIM_FOLDER=12;
+Object.assign(I18N.en,{limitMsg:"Shortcut limit reached (20). Delete one or move some into a folder.",folderFull:"This folder is full (12).",popBlocked:"Pop-up blocked. Allow pop-ups for this page.",notesPh:"Quick notes..."});
+Object.assign(I18N.da,{limitMsg:"Genvejsgrænsen er nået (20). Slet en eller flyt nogle ind i en mappe.",folderFull:"Mappen er fuld (12).",popBlocked:"Pop-up blokeret. Tillad pop-ups for denne side.",notesPh:"Hurtige noter..."});
+function toolsInit(){
+  const n=$("notes"); n.value=S.notes||""; n.oninput=()=>{S.notes=n.value;save();};
+  const d=$("cd"), keys=["C","⌫","(",")","7","8","9","÷","4","5","6","×","1","2","3","−","0",".","=","+"];
+  const calc=()=>{
+    const ex=d.value.replace(/÷/g,"/").replace(/×/g,"*").replace(/−/g,"-").replace(/,/g,".");
+    if(!ex.trim()) return;
+    if(!/^[0-9+\-*/().\s]+$/.test(ex)){d.value="Error";return;}
+    try{ const v=Function('"use strict";return ('+ex+')')(); d.value=Number.isFinite(v)?String(Math.round(v*1e10)/1e10):"Error"; }catch(e){ d.value="Error"; }
+  };
+  keys.forEach(k=>{
+    const b=mk("button",k==="="?"eq":("÷×−+".includes(k)?"op":""),k); b.type="button";
+    b.onclick=()=>{ if(d.value==="Error") d.value=""; if(k==="C") d.value=""; else if(k==="⌫") d.value=d.value.slice(0,-1); else if(k==="=") calc(); else d.value+=k; };
+    $("ck").appendChild(b);
+  });
+  d.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();calc();} });
+  d.addEventListener("input",()=>{ d.value=d.value.replace(/\*/g,"×").replace(/\//g,"÷").replace(/-/g,"−"); });
+}
+function dockItem(it,i){
+  const a=document.createElement(editing.dock?"button":"a"); a.className="ditem";
+  if(editing.dock) a.onclick=()=>openItem("dock",i); else {a.href=it.url;a.target="_blank";a.rel="noopener noreferrer";}
+  const ic=icon(it); const sp=document.createElement("span"); sp.textContent=it.name; a.append(ic,sp); return a;
+}
+function renderDock(){
+  const d=$("dock"); d.classList.toggle("editing",editing.dock); d.innerHTML="";
+  const r1=document.createElement("div"); r1.className="dockrow";
+  const eb=document.createElement("div"); eb.className="pill editbox";
+  const ebtn=document.createElement("button"); ebtn.className="btn"+(editing.dock?" on":""); ebtn.textContent=editing.dock?t("done"):t("editBar"); ebtn.onclick=()=>{editing.dock=!editing.dock;renderDock();};
+  eb.appendChild(ebtn); r1.appendChild(eb);
+  if(editing.dock){ const nb=document.createElement("button"); nb.className="btn primary"; nb.textContent=t("add"); nb.onclick=()=>openItem("dock",-1); r1.appendChild(nb); }
+  const groups={web:[],ai:[],write:[]};
+  S.dock.forEach((it,i)=>(groups[it.group]||groups.web).push([it,i]));
+  const mk=list=>{ if(!list.length) return null; const p=document.createElement("div"); p.className="pill"; list.forEach(([it,i])=>p.appendChild(dockItem(it,i))); return p; };
+  const w=mk(groups.web); if(w) r1.appendChild(w); d.appendChild(r1);
+  const r2=document.createElement("div"); r2.className="dockrow";
+  [mk(groups.ai),mk(groups.write)].forEach(p=>p&&r2.appendChild(p)); if(r2.children.length) d.appendChild(r2);
+}
+function openItem(kind,idx){
+  if(idx<0&&((kind==="grid"&&S.shortcuts.length>=LIM_ROOT)||(kind==="folder"&&listOf("folder").length>=LIM_FOLDER))){ toast(t(kind==="grid"?"limitMsg":"folderFull")); return; }
+  dlg={kind,idx}; const it=idx>=0?listOf(kind)[idx]:{name:"",url:"",color:"#4f6bed",group:"web"};
+  $("itemTitle").textContent=t((idx>=0?"edit":"new")+(kind==="dock"?"Dock":"Shortcut"));
+  $("iName").value=it.name; $("iUrl").value=it.url; $("iColor").value=/^#[0-9a-f]{6}$/i.test(it.color)?it.color:"#4f6bed";
+  $("iGroup").value=it.group||"web"; $("groupBox").style.display=kind==="dock"?"block":"none";
+  $("iDel").style.display=idx>=0?"inline-block":"none"; $("iErr").textContent="";
+  $("itemDlg").showModal(); $("iName").focus();
+}
+function initItems(){
+  $("editGrid").onclick=()=>{editing.grid=!editing.grid;renderGrid();};
+  $("newGrid").onclick=()=>openItem("grid",-1);
+  $("newFolder").onclick=()=>{if(S.shortcuts.length>=LIM_ROOT){toast(t("limitMsg"));return;} S.shortcuts.push({type:"folder",name:t("folder"),items:[]});save();renderGrid();openFolder(S.shortcuts.length-1,true);};
+  $("fName").oninput=()=>{const f=S.shortcuts[curFolder]; if(f){f.name=$("fName").value;save();}};
+  $("fName").onchange=()=>{const f=S.shortcuts[curFolder]; if(f&&!f.name.trim()){f.name=t("folder");$("fName").value=f.name;save();}};
+  $("fDone").onclick=()=>$("folderDlg").close();
+  $("fAdd").onclick=()=>openItem("folder",-1);
+  $("fDel").onclick=()=>{const f=S.shortcuts[curFolder]; if(S.shortcuts.length-1+f.items.length>LIM_ROOT){toast(t("limitMsg"));return;} S.shortcuts.splice(curFolder,1,...f.items); curFolder=null; $("folderDlg").close(); save(); renderGrid();};
+  $("folderDlg").addEventListener("close",()=>{curFolder=null;renderGrid();});
+  $("iCancel").onclick=()=>$("itemDlg").close();
+  $("itemForm").onsubmit=e=>{
+    e.preventDefault(); const name=$("iName").value.trim(), url=cleanUrl($("iUrl").value);
+    if(!name){$("iErr").textContent=t("errName");return;}
+    if(!url){$("iErr").textContent=t("errUrl");return;}
+    const it={name,url,color:$("iColor").value}; const list=listOf(dlg.kind);
+    if(dlg.kind==="dock") it.group=$("iGroup").value;
+    if(dlg.idx>=0) list[dlg.idx]=it; else list.push(it);
+    save(); renderGrid(); renderDock(); $("itemDlg").close(); toast(t("saved"));
+  };
+  $("iDel").onclick=()=>{ listOf(dlg.kind).splice(dlg.idx,1); save(); renderGrid(); renderDock(); $("itemDlg").close(); toast(t("deleted")); };
+}
+
+/* ---------- settings ---------- */
+function initSettings(){
+  const tzs=Intl.supportedValuesOf?Intl.supportedValuesOf("timeZone"):["Europe/Copenhagen","Europe/London","Europe/Berlin","America/New_York","America/Los_Angeles","Asia/Tokyo","Australia/Sydney"];
+  if(!tzs.includes("UTC")) tzs.push("UTC");
+  $("sTz").innerHTML='<option value="auto"></option>'+tzs.map(z=>`<option value="${z}">${z.replace(/_/g," ")}</option>`).join("");
+  $("gear").onclick=()=>{$("sAcc").value=S.accent;$("sTheme").value=S.theme;$("sLang").value=S.lang;$("sTz").value=S.tz;$("sHour").value=S.hour12?"12":"24";$("setDlg").showModal();};
+  $("sTheme").onchange=()=>{S.theme=$("sTheme").value;save();applyTheme();};
+  $("sLang").onchange=()=>{S.lang=$("sLang").value;save();applyLang();};
+  $("sTz").onchange=()=>{S.tz=$("sTz").value;save();tick();};
+  $("sHour").onchange=()=>{S.hour12=$("sHour").value==="12";save();tick();};
+  matchMedia("(prefers-color-scheme: light)").addEventListener("change",()=>{if(S.theme==="system")applyTheme();});
+  $("sClose").onclick=()=>$("setDlg").close();
+  $("sAcc").oninput=()=>{S.accent=$("sAcc").value;applyAccent();save();};
+  $("sReset").onclick=()=>{
+    if(confirm(t("confirmReset"))){
+      try{localStorage.removeItem(KEY);}catch(e){} location.reload();
+    }
+  };
+}
+
+/* ---------- start ---------- */
+load(); applyTheme(); applyAccent(); tick(); setInterval(tick,1000);
+initSearch(); initTimers(); initItems(); initSettings(); skInit(); toolsInit(); renderGrid(); renderDock(); applyLang(); setInterval(skRender,30000);
+</script>
+</body>
+</html>
