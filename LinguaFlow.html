@@ -1,0 +1,576 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>LinguaFlow</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#f3f3f8;--sf:#fff;--s2:#ebebf3;--tx:#1a1b22;--mu:#6d6f7d;--pr:#6c5ce7;--ok:#1f9d63;--no:#e5484d;--or:#f2663b;--bd:#dedee8;color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141517;--sf:#25272c;--s2:#31343a;--tx:#f1f1f5;--mu:#9a9cab;--bd:#34363c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141517;--sf:#25272c;--s2:#31343a;--tx:#f1f1f5;--mu:#9a9cab;--bd:#34363c;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1{font-size:26px;margin:0 0 12px}h2{margin:8px 0}h3{margin:16px 0 6px}
+#app{min-height:100vh}
+nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;padding:12px 24px;background:var(--bg);border-bottom:1px solid var(--bd);overflow-x:auto}
+nav .lg{font-weight:700;font-size:20px;margin-right:18px}
+nav button{display:flex;gap:8px;align-items:center;background:none;border:0;color:var(--mu);font:inherit;padding:8px 12px;border-radius:12px;cursor:pointer;white-space:nowrap}nav button b{display:none}
+nav button.on{background:var(--pr);color:#fff}
+main{padding:28px;max-width:1180px;margin:0 auto;width:100%;min-width:0}
+.card{background:var(--sf);border:1px solid transparent;border-radius:18px;padding:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.mu{color:var(--mu)}.no{color:var(--no)}.n{font-size:28px;font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}.c{justify-content:center}
+.btn{background:var(--s2);color:var(--tx);border:1px solid var(--bd);border-radius:12px;padding:9px 14px;font:inherit;cursor:pointer}
+.btn:hover{border-color:var(--pr)}.btn:disabled{cursor:default}
+.pri{background:var(--pr);color:#fff;border-color:var(--pr);box-shadow:0 4px 0 #4a3eb5}.big{padding:16px 28px;font-size:18px;font-weight:600}
+.ok{border-color:var(--ok);color:var(--ok)}.bad,.btn.no{border-color:var(--no)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--pr);outline-offset:2px}
+input,select,textarea{background:var(--s2);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:9px 12px;font:inherit;max-width:100%}
+label{display:block;margin:12px 0 4px;color:var(--mu);font-size:13px}
+.tag{display:inline-block;background:var(--s2);border-radius:8px;padding:1px 8px;font-size:12px;margin-right:4px}
+.bar{height:10px;background:var(--s2);border-radius:9px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--pr);transition:width .3s}
+.fc{perspective:1000px;height:280px;max-width:480px;margin:18px auto;cursor:pointer}
+.fi{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}.fl .fi{transform:rotateY(180deg)}
+.fa,.fb{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:var(--pr);color:#fff}
+.fa h2{font-size:34px}.fb{transform:rotateY(180deg);background:var(--sf);color:var(--tx);border:2px solid var(--pr)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.opt{padding:16px}
+.good{background:rgba(31,157,99,.18);border-color:var(--ok);animation:pop .3s}.opt.bad{background:rgba(229,72,77,.15)}
+@keyframes pop{50%{transform:scale(1.04)}}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:360px}.cal i{aspect-ratio:1;border-radius:8px;background:var(--s2)}.cal i.a{background:#6c5ce766}.cal i.b{background:var(--pr)}
+.li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.sel{outline:2px solid var(--pr)}
+.lg{display:flex;align-items:center;gap:8px;white-space:nowrap}.lgi{background:var(--pr);color:#fff;border-radius:9px;width:30px;height:30px;display:grid;place-items:center}
+.sr{margin-left:auto;width:170px}.gr{display:flex;gap:10px;align-items:center;white-space:nowrap;line-height:1.2;margin-left:8px}.gr small{display:block;color:#ff8a65;font-size:11px}.av{width:38px;height:38px;border-radius:50%;background:#b69cf5;display:grid;place-items:center}
+.ex{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}.art{border-radius:20px;overflow:hidden;margin-bottom:14px}
+.dk{position:relative;isolation:isolate;background:var(--sf);border-radius:18px;padding:18px;min-height:210px;cursor:pointer;display:flex;flex-direction:column;color:var(--tx);transition:transform .15s}.dk:hover{transform:translateY(-3px)}
+.dk::before{content:"";position:absolute;left:14px;right:14px;top:-7px;height:14px;border-radius:14px 14px 0 0;background:inherit;opacity:.5;z-index:-1}
+.dk b{font-size:17px;max-width:80%}.dk.p,.dk.o,.dk.b{color:#fff}.p{background:linear-gradient(160deg,#7a5cf0,#5a49d6)}.o{background:#ee6a3e}.b{background:#2684ff}
+.bdg{align-self:flex-start;margin-top:8px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--pr);color:#fff}.p .bdg,.o .bdg,.b .bdg{background:#fff;color:#e8531f}
+.ft{margin-top:auto;display:flex;justify-content:space-between;font-size:13px;opacity:.85}
+.pl{position:absolute;top:14px;right:14px;background:#ffffff22;color:inherit;border:0;border-radius:8px;padding:4px 8px;font-size:12px;cursor:pointer}
+.dk.add{background:none;border:2px dashed var(--pr);align-items:center;justify-content:center;gap:6px;font-weight:600}.dk.add::before{display:none}
+@media(max-width:1280px){nav .gr{display:none}}@media(max-width:1060px){nav .sr{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:760px){#app{display:block}nav{position:fixed;bottom:0;left:0;right:0;top:auto;width:auto;height:auto;flex-direction:row;justify-content:space-around;padding:6px 4px;z-index:5;border-top:1px solid var(--bd);border-right:0}nav .lg,nav .l,nav .gr,nav .sr{display:none}nav button b{display:inline}nav button{padding:10px}.ex{grid-template-columns:1fr}main{padding:18px 14px 96px}.opts{grid-template-columns:1fr}}
+/* ===== Professional redesign layer ===== */
+:root{--bg:#f5f5f9;--sf:#fff;--s2:#f0f0f6;--tx:#171923;--mu:#6b7080;--pr:#6d5ef5;--ac:#5a49d6;--bd:#e5e6ee;--g:linear-gradient(135deg,#7b6cf7,#5b4ae0);--sh:0 1px 2px rgba(20,22,40,.05),0 10px 28px -14px rgba(20,22,40,.14)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0e12;--sf:#15171c;--s2:#1d2027;--tx:#eceef4;--mu:#8a8fa0;--ac:#b0a8ff;--bd:#252932;--sh:0 1px 2px rgba(0,0,0,.4),0 14px 32px -16px rgba(0,0,0,.75)}}
+:root[data-theme="dark"]{--bg:#0d0e12;--sf:#15171c;--s2:#1d2027;--tx:#eceef4;--mu:#8a8fa0;--ac:#b0a8ff;--bd:#252932;--sh:0 1px 2px rgba(0,0,0,.4),0 14px 32px -16px rgba(0,0,0,.75)}
+body{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;background-color:var(--bg);background-image:radial-gradient(900px 420px at 75% -8%,rgba(109,94,245,.16),transparent);background-repeat:no-repeat;-webkit-font-smoothing:antialiased}
+::selection{background:rgba(109,94,245,.35)}
+main{max-width:1120px;padding:36px 32px 64px}
+h1{font-size:30px;font-weight:800;letter-spacing:-.025em;margin:4px 0 20px}h2{font-weight:700;letter-spacing:-.015em}h3{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:30px 0 12px}
+nav{background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:10px 32px;gap:4px}
+nav .lg{font-weight:800;font-size:19px;letter-spacing:-.02em;margin-right:22px}
+.lgi{background:var(--g);box-shadow:0 6px 14px -4px rgba(109,94,245,.6)}
+nav button{color:var(--mu);font-weight:500;font-size:14px;padding:8px 14px;transition:background .15s,color .15s}
+nav button:hover{color:var(--tx);background:var(--s2)}
+nav button.on{background:color-mix(in srgb,var(--pr) 16%,transparent);color:var(--ac);font-weight:600}
+.sr{background:var(--s2);border:1px solid var(--bd);padding:8px 14px;width:200px}
+.av{background:var(--g);color:#fff}.gr strong{font-size:14px}
+.card{border:1px solid var(--bd);box-shadow:var(--sh);border-radius:16px;padding:20px}
+.card.good{border-color:var(--ok)}.card.bad{border-color:var(--no)}
+.card .mu{font-size:13px}.n{font-size:32px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:2px}
+.grid{gap:16px}
+.btn{border-radius:12px;padding:10px 16px;font-weight:600;font-size:14px;transition:border-color .15s,background .15s,filter .15s}
+.btn:hover{border-color:var(--pr)}
+.pri{background:var(--g);border:0;color:#fff;box-shadow:0 8px 18px -8px rgba(109,94,245,.8)}.pri:hover{filter:brightness(1.1)}
+.big{padding:15px 28px;font-size:16px;border-radius:14px}
+.btn.ok{color:var(--ok)}.btn.no{color:var(--no)}
+input,select,textarea{border-radius:12px;padding:10px 14px;background:var(--s2);border:1px solid var(--bd)}
+input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--pr) 50%,transparent);border-color:var(--pr)}
+label{font-weight:500;margin:14px 0 6px}
+.tag{border-radius:99px;padding:2px 10px;background:var(--s2);border:1px solid var(--bd);color:var(--mu);font-weight:500;margin-bottom:2px}
+.bar{height:8px;border-radius:99px}.bar i{background:var(--g);border-radius:99px}
+.li{padding:14px 4px}.li:last-child{border-bottom:0}
+.dk{border-radius:20px;padding:20px;min-height:190px;box-shadow:var(--sh);border:1px solid var(--bd);transition:transform .18s,box-shadow .18s}
+.dk:hover{box-shadow:0 22px 40px -20px rgba(0,0,0,.55)}
+.dk b{font-size:18px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+.dk.p,.dk.o,.dk.b{border:0}
+.p{background:linear-gradient(155deg,#8472ff,#5240d8)}.o{background:linear-gradient(155deg,#ff8a5c,#e8531f)}.b{background:linear-gradient(155deg,#3d9bff,#1b66e0)}
+.bdg{border-radius:99px;padding:3px 11px}.ft{font-weight:500}
+.pl{background:rgba(255,255,255,.18);font-weight:600;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.dk:not(.p):not(.o):not(.b) .pl{background:var(--s2)}
+.dk.add{border:2px dashed color-mix(in srgb,var(--pr) 55%,transparent);box-shadow:none;color:var(--ac)}
+.art{box-shadow:var(--sh)}
+.fc{height:320px;max-width:560px;margin:24px auto}
+.fa{background:var(--g);border-radius:28px;box-shadow:0 36px 60px -34px rgba(109,94,245,.9)}.fa h2{font-size:42px;font-weight:800;letter-spacing:-.025em}
+.fb{border-radius:28px;background:var(--sf);border:1px solid var(--bd);box-shadow:var(--sh)}.fb h2{font-size:30px}
+.opt{text-align:left;font-size:16px;padding:18px 20px;border-radius:14px;background:var(--sf);box-shadow:var(--sh)}
+.opt.good{background:rgba(31,157,99,.14);border-color:var(--ok)}.opt.bad{background:rgba(229,72,77,.12);border-color:var(--no)}
+.cal i{border-radius:7px}.cal i.a{background:color-mix(in srgb,var(--pr) 40%,transparent)}
+@media(max-width:760px){nav{background:var(--sf);border-radius:20px 20px 0 0;padding:8px 6px}nav button{padding:10px 14px;font-size:18px}main{padding:24px 16px 104px}h1{font-size:26px}.fc{height:280px}.fa h2{font-size:32px}}
+nav{scrollbar-width:none}nav::-webkit-scrollbar{display:none}
+@media(min-width:761px){nav{overflow:visible;padding:10px 16px;gap:2px}nav button{padding:8px 10px;font-size:13.5px}nav .lg{margin-right:12px}}
+@media(min-width:1180px){nav{padding:10px 32px;gap:4px}nav button{padding:8px 14px;font-size:14px}nav .lg{margin-right:22px}}
+@media(min-width:761px) and (max-width:900px){nav .lg{font-size:0}.lgi{font-size:16px}}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></head><body><div id="app"></div>
+<script>
+let K='lf1';const DAY=864e5,BOX=[0,1,2,4,8,16];
+const LANGS={it:'Italian',es:'Spanish',fr:'French',de:'German',en:'English',da:'Danish',pt:'Portuguese',nl:'Dutch',sv:'Swedish',pl:'Polish',ja:'Japanese',tr:'Turkish'};
+const LV={Beginner:'Beginner',Intermediate:'Intermediate',Advanced:'Advanced'};
+const D=[
+{id:'greet',name:'Greetings & Introductions',topic:'Greetings',lv:'Beginner',c:[
+['Ciao','Hello / Bye','CHA-oh','Ciao, come stai?','Hi, how are you?'],
+['Buongiorno','Good morning','bwon-JOR-no','Buongiorno, signora Rossi.','Good morning, Mrs. Rossi.'],
+['Buonasera','Good evening','bwo-na-SEH-ra','Buonasera a tutti!','Good evening, everyone!'],
+['Arrivederci','Goodbye','ar-ree-veh-DEHR-chee','Arrivederci a domani.','Goodbye, see you tomorrow.'],
+['Grazie','Thank you','GRAHT-see-eh','Grazie per il regalo.','Thank you for the gift.'],
+['Prego','You’re welcome','PREH-go','Prego, si accomodi.','You’re welcome, please sit down.'],
+['Per favore','Please','pehr fa-VO-reh','Un bicchiere d’acqua, per favore.','A glass of water, please.'],
+['Scusi','Excuse me','SKOO-zee','Scusi, dov’è la stazione?','Excuse me, where is the station?'],
+['Come stai?','How are you?','KO-meh STAH-ee','Ciao Marco, come stai?','Hi Marco, how are you?'],
+['Sto bene','I’m well','sto BEH-neh','Sto bene, grazie. E tu?','I’m well, thanks. And you?'],
+['Mi chiamo…','My name is…','mee KYAH-mo','Mi chiamo Anna.','My name is Anna.'],
+['Piacere','Nice to meet you','pya-CHEH-reh','Piacere, sono Luca.','Nice to meet you, I’m Luca.']]},
+{id:'food',name:'Food & Drinks',topic:'Food',lv:'Beginner',c:[
+['L’acqua','Water','LAH-kwa','Bevo un bicchiere d’acqua.','I drink a glass of water.'],
+['Il tè','Tea','eel TEH','Preferisco il tè al limone.','I prefer lemon tea.'],
+['Il pane','Bread','eel PAH-neh','Il pane è fresco.','The bread is fresh.'],
+['Il latte','Milk','eel LAHT-teh','Vuoi del latte nel caffè?','Do you want milk in your coffee?'],
+['La pizza','Pizza','la PEET-tsa','Mangiamo la pizza stasera.','We’re eating pizza tonight.'],
+['La mela','Apple','la MEH-la','Questa mela è dolce.','This apple is sweet.'],
+['Il formaggio','Cheese','eel for-MAHD-jo','Mi piace il formaggio.','I like cheese.'],
+['Il vino','Wine','eel VEE-no','Un bicchiere di vino rosso.','A glass of red wine.'],
+['Il conto','The bill','eel KON-to','Il conto, per favore.','The bill, please.'],
+['Ho fame','I’m hungry','o FAH-meh','Ho fame, andiamo a cena.','I’m hungry, let’s go to dinner.']]},
+{id:'num',name:'Numbers & Days',topic:'Numbers',lv:'Beginner',c:[
+['Uno','One','OO-no','Ho un fratello.','I have one brother.'],
+['Due','Two','DOO-eh','Due caffè, per favore.','Two coffees, please.'],
+['Tre','Three','treh','Ho tre libri.','I have three books.'],
+['Quattro','Four','KWAHT-tro','Siamo in quattro.','There are four of us.'],
+['Cinque','Five','CHEEN-kweh','Sono le cinque.','It’s five o’clock.'],
+['Sei','Six','SEH-ee','Il bus arriva alle sei.','The bus arrives at six.'],
+['Sette','Seven','SET-teh','Una settimana ha sette giorni.','A week has seven days.'],
+['Otto','Eight','OT-to','Ho otto euro.','I have eight euros.'],
+['Nove','Nine','NO-veh','Sono le nove di sera.','It’s nine in the evening.'],
+['Dieci','Ten','dee-EH-chee','Dieci minuti, grazie.','Ten minutes, thanks.'],
+['Venti','Twenty','VEN-tee','Costa venti euro.','It costs twenty euros.'],
+['Lunedì','Monday','loo-neh-DEE','Lunedì lavoro.','I work on Monday.']]},
+{id:'trav',name:'Travel & Directions',topic:'Travel',lv:'Beginner',c:[
+['Dov’è…?','Where is…?','doh-VEH','Dov’è la stazione?','Where is the station?'],
+['A destra','To the right','a DEH-stra','Gira a destra.','Turn right.'],
+['A sinistra','To the left','a see-NEE-stra','La banca è a sinistra.','The bank is on the left.'],
+['Dritto','Straight ahead','DREET-to','Vai sempre dritto.','Keep going straight.'],
+['La stazione','The station','la stat-see-OH-neh','La stazione è vicina.','The station is close.'],
+['Il biglietto','The ticket','eel beel-YET-to','Vorrei un biglietto per Roma.','I would like a ticket to Rome.'],
+['L’aeroporto','The airport','la-eh-ro-POR-to','Andiamo all’aeroporto.','We’re going to the airport.'],
+['Il treno','The train','eel TREH-no','Il treno parte alle otto.','The train leaves at eight.'],
+['L’albergo','The hotel','lal-BEHR-go','L’albergo è in centro.','The hotel is downtown.'],
+['Lontano','Far','lon-TAH-no','È lontano da qui?','Is it far from here?']]},
+{id:'ess',name:'Essential Phrases',topic:'Everyday',lv:'Beginner',c:[
+['Vorrei un caffè','I would like a coffee','vor-REH-ee oon kaf-FEH','Vorrei un caffè e un cornetto.','I would like a coffee and a croissant.'],
+['Ho bisogno di aiuto','I need help','o bee-ZO-nyo dee a-YOO-to','Ho bisogno di aiuto, per favore.','I need help, please.'],
+['Sì','Yes','see','Sì, certo.','Yes, of course.'],
+['No','No','no','No, grazie.','No, thank you.'],
+['Non capisco','I don’t understand','non ka-PEE-sko','Scusi, non capisco.','Sorry, I don’t understand.'],
+['Parli inglese?','Do you speak English?','PAR-lee een-GLEH-zeh','Scusa, parli inglese?','Excuse me, do you speak English?'],
+['Quanto costa?','How much does it cost?','KWAN-to KO-sta','Quanto costa questo?','How much does this cost?'],
+['Mi dispiace','I’m sorry','mee dees-PYAH-cheh','Mi dispiace, sono in ritardo.','I’m sorry, I’m late.']]},
+{id:'verb',name:'Essential Verbs',topic:'Verbs',lv:'Intermediate',c:[
+['Avere','To have','a-VEH-reh','Devo avere pazienza.','I must have patience.'],
+['Essere','To be','ES-seh-reh','Mi piace essere qui.','I like being here.'],
+['Mangiare','To eat','man-JAH-reh','Voglio mangiare.','I want to eat.'],
+['Bere','To drink','BEH-reh','Vorrei bere un tè.','I would like to drink a tea.'],
+['Andare','To go','an-DAH-reh','Dobbiamo andare.','We have to go.'],
+['Parlare','To speak','par-LAH-reh','Mi piace parlare italiano.','I like speaking Italian.'],
+['Capire','To understand','ka-PEE-reh','Voglio capire.','I want to understand.'],
+['Fare','To do / make','FAH-reh','Cosa vuoi fare?','What do you want to do?']]},
+{id:'fam',name:'Family & Friends',topic:'Family',lv:'Beginner',c:[
+['La famiglia','Family','la fa-MEE-lya','La mia famiglia è grande.','My family is big.'],
+['La madre','Mother','la MAH-dreh','Mia madre cucina bene.','My mother cooks well.'],
+['Il padre','Father','eel PAH-dreh','Mio padre lavora a Milano.','My father works in Milan.'],
+['Il fratello','Brother','eel fra-TEL-lo','Mio fratello ha dieci anni.','My brother is ten years old.'],
+['La sorella','Sister','la so-REL-la','Mia sorella studia medicina.','My sister studies medicine.'],
+['Il figlio','Son','eel FEE-lyo','Il figlio gioca a calcio.','The son plays soccer.'],
+['La figlia','Daughter','la FEE-lya','La figlia ama leggere.','The daughter loves to read.'],
+['Il nonno','Grandfather','eel NON-no','Il nonno racconta storie.','Grandpa tells stories.'],
+['La nonna','Grandmother','la NON-na','La nonna fa la pasta.','Grandma makes pasta.'],
+['L’amico','Friend (male)','la-MEE-ko','Marco è un mio amico.','Marco is a friend of mine.'],
+['L’amica','Friend (female)','la-MEE-ka','Giulia è la mia amica.','Giulia is my friend.'],
+['Il bambino','Little boy','eel bam-BEE-no','Il bambino dorme.','The little boy is sleeping.']]},
+{id:'sch',name:'School & Education',topic:'School',lv:'Beginner',c:[
+['La scuola','School','la SKWO-la','I bambini vanno a scuola.','The children go to school.'],
+['Il libro','Book','eel LEE-bro','Leggo un libro interessante.','I’m reading an interesting book.'],
+['Il quaderno','Notebook','eel kwa-DEHR-no','Scrivo nel quaderno.','I write in the notebook.'],
+['La penna','Pen','la PEN-na','Hai una penna?','Do you have a pen?'],
+['La matita','Pencil','la ma-TEE-ta','Uso una matita.','I use a pencil.'],
+['L’insegnante','Teacher','leen-sen-YAN-teh','L’insegnante spiega la lezione.','The teacher explains the lesson.'],
+['Lo studente','Student','lo stoo-DEN-teh','Lo studente fa una domanda.','The student asks a question.'],
+['La lezione','Lesson','la let-see-OH-neh','La lezione inizia alle nove.','The lesson starts at nine.'],
+['Il compito','Homework','eel KOM-pee-to','Ho molti compiti oggi.','I have a lot of homework today.'],
+['La domanda','Question','la do-MAN-da','Posso fare una domanda?','May I ask a question?'],
+['La risposta','Answer','la ree-SPO-sta','La risposta è corretta.','The answer is correct.'],
+['L’esame','Exam','leh-ZAH-meh','Domani ho un esame.','Tomorrow I have an exam.']]},
+{id:'adj',name:'Common Adjectives',topic:'Adjectives',lv:'Beginner',c:[
+['Grande','Big','GRAN-deh','È una casa grande.','It’s a big house.'],
+['Piccolo','Small','PEEK-ko-lo','Il gatto è piccolo.','The cat is small.'],
+['Bello','Beautiful','BEL-lo','Questo posto è bello.','This place is beautiful.'],
+['Brutto','Ugly','BROOT-to','Il film è brutto.','The movie is ugly.'],
+['Buono','Good','BWO-no','Il caffè è buono.','The coffee is good.'],
+['Cattivo','Bad','kat-TEE-vo','Il cane non è cattivo.','The dog is not bad.'],
+['Nuovo','New','NWO-vo','Ho un telefono nuovo.','I have a new phone.'],
+['Vecchio','Old','VEK-kyo','È un libro vecchio.','It’s an old book.'],
+['Caldo','Hot','KAL-do','Il tè è caldo.','The tea is hot.'],
+['Freddo','Cold','FRED-do','Il gelato è freddo.','The ice cream is cold.'],
+['Felice','Happy','feh-LEE-cheh','Sono felice oggi.','I’m happy today.'],
+['Triste','Sad','TREE-steh','Perché sei triste?','Why are you sad?'],
+['Facile','Easy','FAH-chee-leh','L’esame è facile.','The exam is easy.'],
+['Difficile','Difficult','deef-FEE-chee-leh','Questo esercizio è difficile.','This exercise is difficult.']]},
+{id:'col',name:'Colors & Shapes',topic:'Colors',lv:'Beginner',c:[
+['Rosso','Red','ROS-so','Il pomodoro è rosso.','The tomato is red.'],
+['Blu','Blue','bloo','Il mare è blu.','The sea is blue.'],
+['Verde','Green','VEHR-deh','L’erba è verde.','The grass is green.'],
+['Giallo','Yellow','JAL-lo','Il limone è giallo.','The lemon is yellow.'],
+['Nero','Black','NEH-ro','Il gatto è nero.','The cat is black.'],
+['Bianco','White','BYAN-ko','Il latte è bianco.','The milk is white.'],
+['Arancione','Orange','a-ran-CHO-neh','L’arancia è arancione.','The orange is orange.'],
+['Rosa','Pink','RO-za','Il fiore è rosa.','The flower is pink.'],
+['Grigio','Gray','GREE-jo','Il cielo è grigio.','The sky is gray.'],
+['Marrone','Brown','mar-RO-neh','Il cane è marrone.','The dog is brown.'],
+['Il cerchio','Circle','eel CHEHR-kyo','Disegno un cerchio.','I draw a circle.'],
+['Il quadrato','Square','eel kwa-DRAH-to','Il quadrato ha quattro lati.','The square has four sides.'],
+['Il triangolo','Triangle','eel tree-AN-go-lo','Il triangolo ha tre lati.','The triangle has three sides.']]},
+{id:'conv',name:'Everyday Conversations',topic:'Conversations',lv:'Intermediate',c:[
+['Di dove sei?','Where are you from?','dee DO-veh SEH-ee','Di dove sei? Sono di Roma.','Where are you from? I’m from Rome.'],
+['Che cosa fai?','What are you doing?','keh KO-za FAH-ee','Che cosa fai stasera?','What are you doing tonight?'],
+['Che ore sono?','What time is it?','keh O-reh SO-no','Scusi, che ore sono?','Excuse me, what time is it?'],
+['Parla più lentamente','Speak more slowly','PAR-la pyoo len-ta-MEN-teh','Parla più lentamente, per favore.','Please speak more slowly.'],
+['Puoi ripetere?','Can you repeat?','PWOY ree-PEH-teh-reh','Scusa, puoi ripetere?','Sorry, can you repeat that?'],
+['Non lo so','I don’t know','non lo SO','Non lo so, mi dispiace.','I don’t know, I’m sorry.'],
+['Che cosa significa?','What does it mean?','keh KO-za seen-YEE-fee-ka','Che cosa significa questa parola?','What does this word mean?'],
+['Mi piace','I like it','mee PYAH-cheh','Mi piace questa città.','I like this city.'],
+['Che bello!','How nice!','keh BEL-lo','Che bello rivederti!','How nice to see you again!'],
+['A presto','See you soon','a PREH-sto','Ciao, a presto!','Bye, see you soon!'],
+['Buon appetito','Enjoy your meal','bwon ap-peh-TEE-to','Buon appetito a tutti!','Enjoy your meal, everyone!'],
+['Buona fortuna','Good luck','BWO-na for-TOO-na','Buona fortuna per l’esame!','Good luck on the exam!']]},
+{id:'conj',name:'Verb Conjugations',topic:'Verbs',lv:'Intermediate',c:[
+['Io sono','I am','EE-o SO-no','Io sono stanco.','I am tired.'],
+['Tu sei','You are','too SEH-ee','Tu sei gentile.','You are kind.'],
+['Lui è','He is','LOO-ee EH','Lui è di Napoli.','He is from Naples.'],
+['Noi siamo','We are','NOY SYAH-mo','Noi siamo amici.','We are friends.'],
+['Voi siete','You all are','VOY SYEH-teh','Voi siete in ritardo.','You are late.'],
+['Loro sono','They are','LO-ro SO-no','Loro sono a casa.','They are at home.'],
+['Io ho','I have','EE-o O','Io ho una sorella.','I have a sister.'],
+['Tu hai','You have','too AH-ee','Tu hai ragione.','You are right.'],
+['Lui ha','He has','LOO-ee AH','Lui ha un cane.','He has a dog.'],
+['Noi abbiamo','We have','NOY ab-BYAH-mo','Noi abbiamo tempo.','We have time.'],
+['Voi avete','You all have','VOY a-VEH-teh','Voi avete fame?','Are you hungry?'],
+['Loro hanno','They have','LO-ro AN-no','Loro hanno due figli.','They have two children.']]}];
+const def=()=>({setup:0,nat:'en',tgt:'it',lvl:'Beginner',theme:'dark',goal:10,rev:{},cus:[],log:{},modes:{},ses:0,rec:[],best:0,v2:1});
+let S=def(),P=[],cur=null;
+try{P=JSON.parse(localStorage.getItem('lf_p')||'[]')}catch(e){}
+if(!P.length&&localStorage.getItem('lf1')){P=[{id:'p0',name:'Learner',pin:''}];try{localStorage.setItem('lf_p',JSON.stringify(P))}catch(e){}}
+function load(id){K=id==='p0'?'lf1':'lf_'+id;try{S={...def(),...JSON.parse(localStorage.getItem(K)||'{}')}}catch(e){S=def()}if(!S.v2){S.theme='dark';S.v2=1}}
+try{const c=localStorage.getItem('lf_c');if(c&&P.some(p=>p.id===c)){cur=c;load(c)}}catch(e){}
+const save=()=>{if(!cur)return;try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const td=(d=new Date())=>d.toLocaleDateString('sv');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=s=>document.querySelector(s),val=id=>($('#'+id)||{}).value||'';
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const built0=()=>S.tgt==='it'?D.map(d=>({id:d.id,name:d.name,topic:d.topic,lv:d.lv,b:1,c:d.c.map((r,i)=>({id:d.id+i,w:r[0],t:r[1],pr:r[2],ex:r[3],exT:r[4],lv:d.lv,deck:d.name,topic:d.topic}))})):[];
+const cust=()=>S.cus.map(d=>({...d,b:0,lv:'Custom',c:d.c.map(c=>({...c,pr:c.pr||'',lv:'Custom',deck:d.name,topic:d.topic}))}));
+const L12=['en','it','es','fr','de','da','pt','nl','sv','pl','ja','tr'];
+const W=[
+{id:'w1',name:'Greetings & Basics',topic:'Greetings',lv:'Beginner',r:[
+'Hello|Ciao|Hola|Salut|Hallo|Hej|Olá|Hallo|Hej|Cześć|こんにちは~konnichiwa|Merhaba',
+'Goodbye|Arrivederci|Adiós|Au revoir|Auf Wiedersehen|Farvel|Adeus|Tot ziens|Hejdå|Do widzenia|さようなら~sayounara|Hoşça kal',
+'Please|Per favore|Por favor|S’il vous plaît|Bitte|Vær så venlig|Por favor|Alstublieft|Snälla|Proszę|お願いします~onegaishimasu|Lütfen',
+'Thank you|Grazie|Gracias|Merci|Danke|Tak|Obrigado|Dank je|Tack|Dziękuję|ありがとう~arigatou|Teşekkürler',
+'Yes|Sì|Sí|Oui|Ja|Ja|Sim|Ja|Ja|Tak|はい~hai|Evet',
+'No|No|No|Non|Nein|Nej|Não|Nee|Nej|Nie|いいえ~iie|Hayır',
+'Sorry|Mi dispiace|Lo siento|Désolé|Es tut mir leid|Undskyld|Desculpe|Het spijt me|Förlåt|Przepraszam|ごめんなさい~gomennasai|Üzgünüm',
+'Good morning|Buongiorno|Buenos días|Bonjour|Guten Morgen|Godmorgen|Bom dia|Goedemorgen|God morgon|Dzień dobry|おはよう~ohayou|Günaydın',
+'Good night|Buonanotte|Buenas noches|Bonne nuit|Gute Nacht|Godnat|Boa noite|Welterusten|God natt|Dobranoc|おやすみ~oyasumi|İyi geceler',
+'Welcome|Benvenuto|Bienvenido|Bienvenue|Willkommen|Velkommen|Bem-vindo|Welkom|Välkommen|Witaj|ようこそ~youkoso|Hoş geldiniz']},
+{id:'w2',name:'Numbers 1–10',topic:'Numbers',lv:'Beginner',r:[
+'One|Uno|Uno|Un|Eins|En|Um|Een|Ett|Jeden|一~ichi|Bir',
+'Two|Due|Dos|Deux|Zwei|To|Dois|Twee|Två|Dwa|二~ni|İki',
+'Three|Tre|Tres|Trois|Drei|Tre|Três|Drie|Tre|Trzy|三~san|Üç',
+'Four|Quattro|Cuatro|Quatre|Vier|Fire|Quatro|Vier|Fyra|Cztery|四~yon|Dört',
+'Five|Cinque|Cinco|Cinq|Fünf|Fem|Cinco|Vijf|Fem|Pięć|五~go|Beş',
+'Six|Sei|Seis|Six|Sechs|Seks|Seis|Zes|Sex|Sześć|六~roku|Altı',
+'Seven|Sette|Siete|Sept|Sieben|Syv|Sete|Zeven|Sju|Siedem|七~nana|Yedi',
+'Eight|Otto|Ocho|Huit|Acht|Otte|Oito|Acht|Åtta|Osiem|八~hachi|Sekiz',
+'Nine|Nove|Nueve|Neuf|Neun|Ni|Nove|Negen|Nio|Dziewięć|九~kyuu|Dokuz',
+'Ten|Dieci|Diez|Dix|Zehn|Ti|Dez|Tien|Tio|Dziesięć|十~juu|On']},
+{id:'w3',name:'Food & Drinks',topic:'Food',lv:'Beginner',r:[
+'Water|L’acqua|El agua|L’eau|Das Wasser|Vand|A água|Het water|Vatten|Woda|水~mizu|Su',
+'Bread|Il pane|El pan|Le pain|Das Brot|Brød|O pão|Het brood|Bröd|Chleb|パン~pan|Ekmek',
+'Milk|Il latte|La leche|Le lait|Die Milch|Mælk|O leite|De melk|Mjölk|Mleko|牛乳~gyuunyuu|Süt',
+'Coffee|Il caffè|El café|Le café|Der Kaffee|Kaffe|O café|De koffie|Kaffe|Kawa|コーヒー~koohii|Kahve',
+'Tea|Il tè|El té|Le thé|Der Tee|Te|O chá|De thee|Te|Herbata|お茶~ocha|Çay',
+'Apple|La mela|La manzana|La pomme|Der Apfel|Æble|A maçã|De appel|Äpple|Jabłko|りんご~ringo|Elma',
+'Cheese|Il formaggio|El queso|Le fromage|Der Käse|Ost|O queijo|De kaas|Ost|Ser|チーズ~chiizu|Peynir',
+'Rice|Il riso|El arroz|Le riz|Der Reis|Ris|O arroz|De rijst|Ris|Ryż|ご飯~gohan|Pirinç',
+'Meat|La carne|La carne|La viande|Das Fleisch|Kød|A carne|Het vlees|Kött|Mięso|肉~niku|Et',
+'Fish|Il pesce|El pescado|Le poisson|Der Fisch|Fisk|O peixe|De vis|Fisk|Ryba|魚~sakana|Balık']},
+{id:'w4',name:'Family & People',topic:'Family',lv:'Beginner',r:[
+'Mother|La madre|La madre|La mère|Die Mutter|Mor|A mãe|De moeder|Mamma|Matka|母~haha|Anne',
+'Father|Il padre|El padre|Le père|Der Vater|Far|O pai|De vader|Pappa|Ojciec|父~chichi|Baba',
+'Friend|L’amico|El amigo|L’ami|Der Freund|Ven|O amigo|De vriend|Vän|Przyjaciel|友達~tomodachi|Arkadaş',
+'Child|Il bambino|El niño|L’enfant|Das Kind|Barn|A criança|Het kind|Barn|Dziecko|子供~kodomo|Çocuk',
+'Man|L’uomo|El hombre|L’homme|Der Mann|Mand|O homem|De man|Man|Mężczyzna|男性~dansei|Adam',
+'Woman|La donna|La mujer|La femme|Die Frau|Kvinde|A mulher|De vrouw|Kvinna|Kobieta|女性~josei|Kadın',
+'Boy|Il ragazzo|El chico|Le garçon|Der Junge|Dreng|O menino|De jongen|Pojke|Chłopiec|男の子~otoko no ko|Erkek çocuk',
+'Girl|La ragazza|La chica|La petite fille|Das Mädchen|Pige|A menina|Het meisje|Flicka|Dziewczyna|女の子~onna no ko|Kız çocuğu',
+'Son|Il figlio|El hijo|Le fils|Der Sohn|Søn|O filho|De zoon|Son|Syn|息子~musuko|Oğul',
+'Daughter|La figlia|La hija|La fille|Die Tochter|Datter|A filha|De dochter|Dotter|Córka|娘~musume|Kız']},
+{id:'w5',name:'Travel & Places',topic:'Travel',lv:'Beginner',r:[
+'House|La casa|La casa|La maison|Das Haus|Hus|A casa|Het huis|Hus|Dom|家~ie|Ev',
+'City|La città|La ciudad|La ville|Die Stadt|By|A cidade|De stad|Stad|Miasto|町~machi|Şehir',
+'Street|La strada|La calle|La rue|Die Straße|Gade|A rua|De straat|Gata|Ulica|道~michi|Sokak',
+'Car|La macchina|El coche|La voiture|Das Auto|Bil|O carro|De auto|Bil|Samochód|車~kuruma|Araba',
+'Train|Il treno|El tren|Le train|Der Zug|Tog|O comboio|De trein|Tåg|Pociąg|電車~densha|Tren',
+'Bus|L’autobus|El autobús|Le bus|Der Bus|Bus|O autocarro|De bus|Buss|Autobus|バス~basu|Otobüs',
+'Airport|L’aeroporto|El aeropuerto|L’aéroport|Der Flughafen|Lufthavn|O aeroporto|De luchthaven|Flygplats|Lotnisko|空港~kuukou|Havalimanı',
+'Hotel|L’albergo|El hotel|L’hôtel|Das Hotel|Hotel|O hotel|Het hotel|Hotell|Hotel|ホテル~hoteru|Otel',
+'Ticket|Il biglietto|El billete|Le billet|Die Fahrkarte|Billet|O bilhete|Het kaartje|Biljett|Bilet|切符~kippu|Bilet',
+'Beach|La spiaggia|La playa|La plage|Der Strand|Strand|A praia|Het strand|Strand|Plaża|ビーチ~biichi|Plaj']},
+{id:'w6',name:'Adjectives & Colors',topic:'Adjectives',lv:'Beginner',r:[
+'Big|Grande|Grande|Grand|Groß|Stor|Grande|Groot|Stor|Duży|大きい~ookii|Büyük',
+'Small|Piccolo|Pequeño|Petit|Klein|Lille|Pequeno|Klein|Liten|Mały|小さい~chiisai|Küçük',
+'Good|Buono|Bueno|Bon|Gut|God|Bom|Goed|Bra|Dobry|良い~yoi|İyi',
+'Bad|Cattivo|Malo|Mauvais|Schlecht|Dårlig|Mau|Slecht|Dålig|Zły|悪い~warui|Kötü',
+'New|Nuovo|Nuevo|Nouveau|Neu|Ny|Novo|Nieuw|Ny|Nowy|新しい~atarashii|Yeni',
+'Old|Vecchio|Viejo|Vieux|Alt|Gammel|Velho|Oud|Gammal|Stary|古い~furui|Eski',
+'Red|Rosso|Rojo|Rouge|Rot|Rød|Vermelho|Rood|Röd|Czerwony|赤~aka|Kırmızı',
+'Blue|Blu|Azul|Bleu|Blau|Blå|Azul|Blauw|Blå|Niebieski|青~ao|Mavi',
+'Green|Verde|Verde|Vert|Grün|Grøn|Verde|Groen|Grön|Zielony|緑~midori|Yeşil',
+'Black|Nero|Negro|Noir|Schwarz|Sort|Preto|Zwart|Svart|Czarny|黒~kuro|Siyah']},
+{id:'w7',name:'Essential Verbs',topic:'Verbs',lv:'Intermediate',r:[
+'To eat|Mangiare|Comer|Manger|Essen|Spise|Comer|Eten|Äta|Jeść|食べる~taberu|Yemek',
+'To drink|Bere|Beber|Boire|Trinken|Drikke|Beber|Drinken|Dricka|Pić|飲む~nomu|İçmek',
+'To go|Andare|Ir|Aller|Gehen|Gå|Ir|Gaan|Gå|Iść|行く~iku|Gitmek',
+'To have|Avere|Tener|Avoir|Haben|Have|Ter|Hebben|Ha|Mieć|持つ~motsu|Sahip olmak',
+'To be|Essere|Ser|Être|Sein|Være|Ser|Zijn|Vara|Być|です~desu|Olmak',
+'To speak|Parlare|Hablar|Parler|Sprechen|Tale|Falar|Spreken|Prata|Mówić|話す~hanasu|Konuşmak',
+'To see|Vedere|Ver|Voir|Sehen|Se|Ver|Zien|Se|Widzieć|見る~miru|Görmek',
+'To sleep|Dormire|Dormir|Dormir|Schlafen|Sove|Dormir|Slapen|Sova|Spać|寝る~neru|Uyumak',
+'To love|Amare|Amar|Aimer|Lieben|Elske|Amar|Liefhebben|Älska|Kochać|愛する~aisuru|Sevmek',
+'To understand|Capire|Entender|Comprendre|Verstehen|Forstå|Entender|Begrijpen|Förstå|Rozumieć|分かる~wakaru|Anlamak']},
+{id:'w8',name:'Days & Time',topic:'Time',lv:'Beginner',r:[
+'Monday|Lunedì|Lunes|Lundi|Montag|Mandag|Segunda-feira|Maandag|Måndag|Poniedziałek|月曜日~getsuyoubi|Pazartesi',
+'Tuesday|Martedì|Martes|Mardi|Dienstag|Tirsdag|Terça-feira|Dinsdag|Tisdag|Wtorek|火曜日~kayoubi|Salı',
+'Wednesday|Mercoledì|Miércoles|Mercredi|Mittwoch|Onsdag|Quarta-feira|Woensdag|Onsdag|Środa|水曜日~suiyoubi|Çarşamba',
+'Thursday|Giovedì|Jueves|Jeudi|Donnerstag|Torsdag|Quinta-feira|Donderdag|Torsdag|Czwartek|木曜日~mokuyoubi|Perşembe',
+'Friday|Venerdì|Viernes|Vendredi|Freitag|Fredag|Sexta-feira|Vrijdag|Fredag|Piątek|金曜日~kinyoubi|Cuma',
+'Saturday|Sabato|Sábado|Samedi|Samstag|Lørdag|Sábado|Zaterdag|Lördag|Sobota|土曜日~doyoubi|Cumartesi',
+'Sunday|Domenica|Domingo|Dimanche|Sonntag|Søndag|Domingo|Zondag|Söndag|Niedziela|日曜日~nichiyoubi|Pazar',
+'Today|Oggi|Hoy|Aujourd’hui|Heute|I dag|Hoje|Vandaag|I dag|Dzisiaj|今日~kyou|Bugün',
+'Tomorrow|Domani|Mañana|Demain|Morgen|I morgen|Amanhã|Morgen|I morgon|Jutro|明日~ashita|Yarın',
+'Yesterday|Ieri|Ayer|Hier|Gestern|I går|Ontem|Gisteren|I går|Wczoraj|昨日~kinou|Dün']},
+{id:'w9',name:'Seasons & Weather',topic:'Weather',lv:'Beginner',r:[
+'Spring|La primavera|La primavera|Le printemps|Der Frühling|Forår|A primavera|De lente|Vår|Wiosna|春~haru|İlkbahar',
+'Summer|L’estate|El verano|L’été|Der Sommer|Sommer|O verão|De zomer|Sommar|Lato|夏~natsu|Yaz',
+'Autumn|L’autunno|El otoño|L’automne|Der Herbst|Efterår|O outono|De herfst|Höst|Jesień|秋~aki|Sonbahar',
+'Winter|L’inverno|El invierno|L’hiver|Der Winter|Vinter|O inverno|De winter|Vinter|Zima|冬~fuyu|Kış',
+'Sun|Il sole|El sol|Le soleil|Die Sonne|Sol|O sol|De zon|Sol|Słońce|太陽~taiyou|Güneş',
+'Rain|La pioggia|La lluvia|La pluie|Der Regen|Regn|A chuva|De regen|Regn|Deszcz|雨~ame|Yağmur',
+'Snow|La neve|La nieve|La neige|Der Schnee|Sne|A neve|De sneeuw|Snö|Śnieg|雪~yuki|Kar',
+'Wind|Il vento|El viento|Le vent|Der Wind|Vind|O vento|De wind|Vind|Wiatr|風~kaze|Rüzgar',
+'Hot|Caldo|Caliente|Chaud|Heiß|Varm|Quente|Heet|Varm|Gorący|熱い~atsui|Sıcak',
+'Cold|Freddo|Frío|Froid|Kalt|Kold|Frio|Koud|Kall|Zimny|冷たい~tsumetai|Soğuk']},
+{id:'w10',name:'Body & Health',topic:'Body',lv:'Beginner',r:[
+'Head|La testa|La cabeza|La tête|Der Kopf|Hoved|A cabeça|Het hoofd|Huvud|Głowa|頭~atama|Baş',
+'Hand|La mano|La mano|La main|Die Hand|Hånd|A mão|De hand|Hand|Ręka|手~te|El',
+'Eye|L’occhio|El ojo|L’œil|Das Auge|Øje|O olho|Het oog|Öga|Oko|目~me|Göz',
+'Foot|Il piede|El pie|Le pied|Der Fuß|Fod|O pé|De voet|Fot|Stopa|足~ashi|Ayak',
+'Heart|Il cuore|El corazón|Le cœur|Das Herz|Hjerte|O coração|Het hart|Hjärta|Serce|心臓~shinzou|Kalp',
+'Mouth|La bocca|La boca|La bouche|Der Mund|Mund|A boca|De mond|Mun|Usta|口~kuchi|Ağız',
+'Nose|Il naso|La nariz|Le nez|Die Nase|Næse|O nariz|De neus|Näsa|Nos|鼻~hana|Burun',
+'Ear|L’orecchio|La oreja|L’oreille|Das Ohr|Øre|A orelha|Het oor|Öra|Ucho|耳~mimi|Kulak',
+'Doctor|Il medico|El médico|Le médecin|Der Arzt|Læge|O médico|De dokter|Läkare|Lekarz|医者~isha|Doktor',
+'Hospital|L’ospedale|El hospital|L’hôpital|Das Krankenhaus|Hospital|O hospital|Het ziekenhuis|Sjukhus|Szpital|病院~byouin|Hastane']},
+{id:'w11',name:'Home & Objects',topic:'Home',lv:'Beginner',r:[
+'Table|Il tavolo|La mesa|La table|Der Tisch|Bord|A mesa|De tafel|Bord|Stół|テーブル~teeburu|Masa',
+'Chair|La sedia|La silla|La chaise|Der Stuhl|Stol|A cadeira|De stoel|Stol|Krzesło|椅子~isu|Sandalye',
+'Door|La porta|La puerta|La porte|Die Tür|Dør|A porta|De deur|Dörr|Drzwi|ドア~doa|Kapı',
+'Window|La finestra|La ventana|La fenêtre|Das Fenster|Vindue|A janela|Het raam|Fönster|Okno|窓~mado|Pencere',
+'Bed|Il letto|La cama|Le lit|Das Bett|Seng|A cama|Het bed|Säng|Łóżko|ベッド~beddo|Yatak',
+'Kitchen|La cucina|La cocina|La cuisine|Die Küche|Køkken|A cozinha|De keuken|Kök|Kuchnia|台所~daidokoro|Mutfak',
+'Book|Il libro|El libro|Le livre|Das Buch|Bog|O livro|Het boek|Bok|Książka|本~hon|Kitap',
+'Phone|Il telefono|El teléfono|Le téléphone|Das Telefon|Telefon|O telefone|De telefoon|Telefon|Telefon|電話~denwa|Telefon',
+'Key|La chiave|La llave|La clé|Der Schlüssel|Nøgle|A chave|De sleutel|Nyckel|Klucz|鍵~kagi|Anahtar',
+'Money|I soldi|El dinero|L’argent|Das Geld|Penge|O dinheiro|Het geld|Pengar|Pieniądze|お金~okane|Para']},
+{id:'w12',name:'Questions & Phrases',topic:'Questions',lv:'Beginner',r:[
+'What|Che cosa|Qué|Quoi|Was|Hvad|O quê|Wat|Vad|Co|何~nani|Ne',
+'Where|Dove|Dónde|Où|Wo|Hvor|Onde|Waar|Var|Gdzie|どこ~doko|Nerede',
+'When|Quando|Cuándo|Quand|Wann|Hvornår|Quando|Wanneer|När|Kiedy|いつ~itsu|Ne zaman',
+'Why|Perché|Por qué|Pourquoi|Warum|Hvorfor|Porquê|Waarom|Varför|Dlaczego|なぜ~naze|Neden',
+'Who|Chi|Quién|Qui|Wer|Hvem|Quem|Wie|Vem|Kto|誰~dare|Kim',
+'How|Come|Cómo|Comment|Wie|Hvordan|Como|Hoe|Hur|Jak|どう~dou|Nasıl',
+'How much?|Quanto?|¿Cuánto?|Combien ?|Wie viel?|Hvor meget?|Quanto?|Hoeveel?|Hur mycket?|Ile?|いくら~ikura|Ne kadar?',
+'Which|Quale|Cuál|Quel|Welche|Hvilken|Qual|Welke|Vilken|Który|どれ~dore|Hangi',
+'I don’t understand|Non capisco|No entiendo|Je ne comprends pas|Ich verstehe nicht|Jeg forstår ikke|Não entendo|Ik begrijp het niet|Jag förstår inte|Nie rozumiem|分かりません~wakarimasen|Anlamıyorum',
+'Do you speak English?|Parli inglese?|¿Hablas inglés?|Parlez-vous anglais ?|Sprichst du Englisch?|Taler du engelsk?|Fala inglês?|Spreek je Engels?|Pratar du engelska?|Mówisz po angielsku?|英語を話せますか~eigo o hanasemasu ka|İngilizce konuşuyor musun?']}];
+let BK='',BC=[];
+const cell=(R,l)=>{const p=R[L12.indexOf(l)].split('~');return {w:p[0],r:p[1]||''}};
+const built=()=>{const k=S.nat+S.tgt;if(k===BK)return BC;BK=k;if(S.nat===S.tgt)return BC=[];
+ const lg=S.tgt==='it'&&S.nat==='en',o=lg?built0():[],have=new Set(o.flatMap(d=>d.c.map(c=>c.w.toLowerCase())));
+ W.forEach(d=>{const c=[];d.r.forEach((s,i)=>{const R=s.split('|'),a=cell(R,S.tgt),b=cell(R,S.nat);if(lg&&have.has(a.w.toLowerCase()))return;
+  c.push({id:S.tgt+'.'+d.id+i,w:a.w,t:b.r?b.w+' ('+b.r+')':b.w,tp:b.r,pr:a.r,ex:'',exT:'',lv:d.lv,deck:d.name,topic:d.topic})});
+  if(c.length)o.push({id:d.id,name:d.name,topic:d.topic,lv:d.lv,b:1,c})});
+ return BC=o};
+const decks=()=>[...built(),...cust()],all=()=>decks().flatMap(d=>d.c);
+const isDue=c=>{const r=S.rev[c.id];return !!(r&&r.seen&&r.due<=Date.now())};
+const isLearned=c=>{const r=S.rev[c.id];return !!(r&&(r.lrn||r.box>=4))};
+const isHard=c=>{const r=S.rev[c.id];return !!(r&&r.seen&&(r.hard||r.bad>r.ok))};
+const seenC=c=>!!(S.rev[c.id]&&S.rev[c.id].seen);
+const pr=c=>{const r=S.rev[c.id];return r&&r.seen?r.due:Date.now()+1};
+const streak=()=>{let n=0,d=new Date();if(!S.log[td(d)])d.setDate(d.getDate()-1);while(S.log[td(d)]){n++;d.setDate(d.getDate()-1)}return n};
+function grade(c,ok,mode,hard){
+ const r=S.rev[c.id]=S.rev[c.id]||{box:0,due:0,seen:0,ok:0,bad:0};
+ r.seen++;ok?r.ok++:r.bad++;
+ if(hard){r.hard=1;r.box=Math.min(r.box,1);r.due=Date.now()+36e5}
+ else if(ok){r.box=Math.min(5,r.box+1);r.due=Date.now()+BOX[r.box]*DAY;if(r.box>=3)r.hard=0}
+ else{r.box=0;r.due=Date.now()+3e5}
+ const l=S.log[td()]=S.log[td()]||{n:0,ok:0};l.n++;if(ok)l.ok++;
+ const m=S.modes[mode]=S.modes[mode]||{n:0,ok:0};m.n++;if(ok)m.ok++;
+ S.best=Math.max(S.best||0,streak());save()}
+const nz=s=>String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\([^)]*\)/g,'').replace(/[’']/g,' ').replace(/[^\p{L}\p{N}\s]/gu,'').trim().replace(/^(to|the|a|an|il|lo|la|le|gli|el|los|las|les|l|der|die|das|de|het|een|o|os|as|um|uma|un|une)\s+/,'').replace(/\s+/g,' ');
+const same=(a,b)=>b.split(/[\/;]/).some(v=>nz(v)===nz(a)&&nz(a)!=='');
+let V='dash',Q=null,E={},CF='',F={q:'',c:'',l:'',s:''},PS={d:'due',n:20,r:'fwd'};
+const NAV=[['dash','🏠','Dashboard'],['my','🗂️','My Flashcards'],['exp','🧭','Explore Decks'],['prac','🎯','Practice'],['lib','📚','Vocabulary Library'],['prog','📈','Progress'],['set','⚙️','Settings']];
+const app=$('#app');
+const sel=(id,o,v)=>`<select id="${id}">${Object.entries(o).map(([k,n])=>`<option value="${k}" ${k===v?'selected':''}>${n}</option>`).join('')}</select>`;
+const st=(a,b,x='')=>`<div class="card"><div class="mu">${a}</div><div class="n">${b}</div>${x}</div>`;
+const note=()=>S.tgt===S.nat?'<div class="card">Your native and learning languages are the same. Change one of them in Settings.</div>':'';const note0=()=>S.tgt==='it'?(S.nat==='en'?'':'<div class="card">Built-in Italian decks are written with English translations. Your own decks can use any language.</div>'):'<div class="card">Built-in decks are available for Italian. For '+LANGS[S.tgt]+', build your own decks in My Flashcards.</div>';
+function render(){
+ document.documentElement.dataset.theme=S.theme==='auto'?'':S.theme;
+ if(!cur){app.innerHTML=`<main>${login()}</main>`;return}
+ if(!S.setup){app.innerHTML=`<main>${setup()}</main>`;return}
+ app.innerHTML=`<nav><div class="lg"><span class="lgi">☺</span>LinguaFlow</div>${NAV.map(n=>`<button class="${V===n[0]||(V==='ses'&&n[0]==='prac')?'on':''}" data-a="go" data-v="${n[0]}" title="${n[2]}"><b>${n[1]}</b><span class="l">${n[2]}</span></button>`).join('')}<input class="sr" id="gs" type="search" placeholder="Search words"><div class="gr"><span class="av">🙂</span><div><small>☀ ${new Date().getHours()<12?'Good morning':new Date().getHours()<18?'Good afternoon':'Good evening'}</small><strong>${streak()}-day streak</strong></div></div></nav><main>${VIEWS[V]()}</main>`;
+ const a=$('#ans');if(a&&Q&&Q.a==null)a.focus()}
+function setup(){return `<div class="card" style="max-width:480px;margin:8vh auto"><h1>Welcome to LinguaFlow</h1><p class="mu">Pick your languages and level. You can change them later in Settings.</p><label>I speak</label>${sel('nat',LANGS,S.nat)}<label>I want to learn</label>${sel('tgt',LANGS,S.tgt)}<label>My level</label>${sel('lvl',LV,S.lvl)}${E.err?`<p class="no">${E.err}</p>`:''}<div class="row"><button class="btn pri big" data-a="start">Start learning</button></div></div>`}
+function dash(){const A=all(),due=A.filter(isDue),l=S.log[td()]||{n:0},g=Math.min(100,Math.round(l.n/S.goal*100));
+ const rec=S.rec.map(id=>decks().find(d=>d.id===id)).filter(Boolean),h=new Date().getHours();
+ return `<h1>${h<12?'Good morning':h<18?'Good afternoon':'Good evening'}</h1>${note()}<div class="row"><button class="btn pri big" data-a="cont">Continue Learning</button></div>
+<div class="grid">${st('Today’s goal',l.n+' / '+S.goal+' answers',`<div class="bar"><i style="width:${g}%"></i></div>`)}${st('Words learned',A.filter(isLearned).length)}${st('Practice sessions',S.ses)}${st('Current streak',streak()+' day'+(streak()===1?'':'s'))}${st('Due for review',due.length)}</div>
+<h3>Recently studied</h3>${rec.length?`<div class="grid">${rec.map(deckCard).join('')}</div>`:'<p class="mu">Decks you study will show up here.</p>'}
+<h3>Due for review</h3>${due.length?due.slice(0,8).map(c=>`<span class="tag">${esc(c.w)}</span>`).join(''):'<p class="mu">Nothing is due right now.</p>'}`}
+function deckCard(d){const n=d.c.filter(isLearned).length;return `<div class="card"><b>${esc(d.name)}</b><div><span class="tag">${d.lv}</span><span class="tag">${esc(d.topic||'')}</span></div><p class="mu">${d.c.length} cards, ${n} learned</p><div class="bar"><i style="width:${d.c.length?n/d.c.length*100:0}%"></i></div><div class="row"><button class="btn pri" data-a="study" data-id="${d.id}">Study</button><button class="btn" data-a="pdeck" data-id="${d.id}">Practice</button></div></div>`}
+function exp(){const b=built();return `<h1>Explore Decks</h1>${note()}${b.length?`<div class="grid" style="margin-top:14px">${b.map(deckCard).join('')}</div>`:''}`}
+function my(){const ed=S.cus.find(d=>d.id===E.ed);
+ return `<h1>My Flashcards</h1><div class="card"><b>New deck</b><div class="row"><input id="dn" placeholder="Deck name"><input id="dt" placeholder="Topic, e.g. Food"><button class="btn pri" data-a="adddeck">Create deck</button></div>${E.err&&!ed?`<p class="no">${E.err}</p>`:''}</div>
+${S.cus.length?`<div class="grid" style="margin-top:14px">${S.cus.map(d=>`<div class="card"><b>${esc(d.name)}</b><div class="tag">${esc(d.topic||'No topic')}</div><p class="mu">${d.c.length} cards</p><div class="row"><button class="btn pri" data-a="study" data-id="${d.id}">Study</button><button class="btn" data-a="edit" data-id="${d.id}">Edit</button><button class="btn no" data-a="deldeck" data-id="${d.id}">${CF==='d'+d.id?'Click again to delete':'Delete'}</button></div></div>`).join('')}</div>`:'<p class="mu">No decks yet. Create one above, then add words to it.</p>'}${ed?editor(ed):''}`}
+function editor(d){const c=E.ec!=null?d.c[E.ec]:null;
+ return `<div class="card" style="margin-top:18px"><div class="row"><h2 style="flex:1">${esc(d.name)}</h2><button class="btn" data-a="closeEd">Close</button></div>
+<div class="row"><input id="cw" placeholder="Word or phrase" value="${esc(c&&c.w)}"><input id="ct" placeholder="Translation" value="${esc(c&&c.t)}"><input id="cx" placeholder="Example sentence (optional)" value="${esc(c&&c.ex)}"><input id="cy" placeholder="Example translation (optional)" value="${esc(c&&c.exT)}"><button class="btn pri" data-a="savecard">${c?'Save changes':'Add card'}</button></div>${E.err?`<p class="no">${E.err}</p>`:''}
+${d.c.length?d.c.map((x,i)=>`<div class="li"><span><b>${esc(x.w)}</b> <span class="mu">${esc(x.t)}</span></span><span><button class="btn" data-a="editcard" data-i="${i}">Edit</button> <button class="btn no" data-a="delcard" data-i="${i}">${CF==='c'+i?'Sure?':'Delete'}</button></span></div>`).join(''):'<p class="mu">This deck is empty. Add your first card above.</p>'}</div>`}
+const pool=k=>k==='mix'?all():k==='due'?all().filter(c=>isDue(c)||isHard(c)):(decks().find(d=>d.id===k)||{c:[]}).c;
+function prac(){const m=E.msg;E.msg='';const ds=decks();
+ return `<h1>Practice</h1>${m?`<p class="no">${m}</p>`:''}<label>What to practise</label><select id="pd"><option value="due" ${PS.d==='due'?'selected':''}>Review difficult and due words (${pool('due').length})</option><option value="mix" ${PS.d==='mix'?'selected':''}>All words, mixed (${all().length})</option>${ds.map(d=>`<option value="${d.id}" ${PS.d===d.id?'selected':''}>${esc(d.name)} (${d.c.length})</option>`).join('')}</select>
+<div class="row"><label style="margin:0">Questions</label><select id="pn">${[10,20,30,50].map(n=>`<option ${PS.n===n?'selected':''}>${n}</option>`).join('')}</select><label style="margin:0">Direction</label><select id="pr">${[['fwd',LANGS[S.tgt]+' to '+LANGS[S.nat]],['rev',LANGS[S.nat]+' to '+LANGS[S.tgt]],['mix','Mixed']].map(o=>`<option value="${o[0]}" ${PS.r===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div><div class="grid" style="margin-top:16px">${[['flash','Flashcards','See a word, flip it, rate how well you knew it.'],['mc','Multiple choice','Pick the right translation from four options.'],['type','Type the translation','Write the answer and get feedback.'],['match','Match pairs','Connect words with their translations, six at a time.']].map(m=>`<div class="card"><b>${m[1]}</b><p class="mu">${m[2]}</p><button class="btn pri" data-a="pm" data-m="${m[0]}">Start</button></div>`).join('')}</div>`}
+function start(m,p,name,id){
+ if(p.length<(m==='match'?2:1)){E.msg='There are no cards to practise there yet. Pick a deck, or study some cards first.';V='prac';return render()}
+ if(id){S.rec=[id,...S.rec.filter(x=>x!==id)].slice(0,4);save()}
+ p=shuffle([...p]).sort((a,b)=>pr(a)-pr(b));
+ Q={m,name,c:p.slice(0,PS.n||20),i:0,fl:0,res:{},a:null};Q.rv=Q.c.map(()=>PS.r==='rev'||(PS.r==='mix'&&Math.random()<.5));if(m==='match')initMatch();V='ses';render()}
+const mround=()=>{const q=Q,r=q.c.slice(q.o,q.o+6).map(c=>c.id);q.L=shuffle([...r]);q.R=shuffle([...r]);q.sel=null;q.d=[];q.w=[];q.bad={}};const initMatch=()=>{const q=Q;q.o=0;mround();q.sel=null;q.d=[];q.w=[];q.bad={};q.res={};q.fin=0};
+const cardOf=id=>Q.c.find(c=>c.id===id);
+function ses(){const q=Q;if(!q)return '<p>No active session.</p>';
+ if(q.m==='match')return matchV();
+ if(q.i>=q.c.length)return sum();
+ const c=q.c[q.i];
+ return `<div class="row"><button class="btn" data-a="exit">Exit</button><b style="flex:1">${esc(q.name)}</b><span class="mu">${q.i+1} of ${q.c.length} cards</span></div><div class="bar"><i style="width:${q.i/q.c.length*100}%"></i></div>`+(q.m==='flash'?flashV(c):q.m==='mc'?mcV(c):typeV(c))}
+function flashV(c){const r=Q.res[c.id];return `<div class="fc ${Q.fl?'fl':''}" data-a="flip"><div class="fi"><div class="fa"><h2>${esc(c.w)}</h2><small>${esc(c.pr)}</small></div><div class="fb"><h2>${esc(c.t)}</h2>${c.ex?`<p><i>${esc(c.ex)}</i><br><span class="mu">${esc(c.exT)}</span></p>`:''}</div></div></div>
+${r?`<p class="mu" style="text-align:center">Marked: ${r==='k'?'knew it':r==='h'?'difficult':'learned'}</p>`:''}
+<div class="row c"><button class="btn" data-a="prev">Previous</button><button class="btn" data-a="flip">Flip</button><button class="btn" data-a="next">Next</button><button class="btn" data-a="shuf">Shuffle</button><button class="btn" data-a="restart">Restart</button></div>
+<div class="row c"><button class="btn ok" data-a="rate" data-r="k">I knew it</button><button class="btn no" data-a="rate" data-r="h">Difficult</button><button class="btn" data-a="rate" data-r="l">Mark learned</button></div>`}
+function fb(c){const ok=Q.res[c.id]==='k';return `<div class="card ${ok?'good':'bad'}">${ok?'Correct!':'Answer: <b>'+esc(c.t)+'</b>'}${c.ex?`<br><span class="mu">${esc(c.ex)} (${esc(c.exT)})</span>`:''}<div class="row"><button class="btn pri" data-a="nxt">Continue</button></div></div>`}
+function mcV(c){const q=Q;if(!q.o){const seen=new Set([c.t]),d=[];for(const x of shuffle(all())){if(!seen.has(x.t)){seen.add(x.t);d.push(x.t)}if(d.length>=3)break}q.o=shuffle([c.t,...d])}
+ return `<div class="card" style="text-align:center"><div class="mu">Choose the translation</div><h2>${esc(c.w)}</h2><small>${esc(c.pr)}</small></div><div class="opts">${q.o.map((o,i)=>`<button class="btn opt ${q.a!=null?(o===c.t?'good':o===q.a?'bad':''):''}" data-a="pick" data-i="${i}" ${q.a!=null?'disabled':''}>${esc(o)}</button>`).join('')}</div>${q.a!=null?fb(c):''}`}
+function typeV(c){const q=Q;return `<div class="card" style="text-align:center"><div class="mu">Type the translation</div><h2>${esc(c.w)}</h2><small>${esc(c.pr)}</small></div><div class="row c"><input id="ans" autocomplete="off" placeholder="Your answer" ${q.a!=null?'disabled value="'+esc(q.a)+'"':''}>${q.a==null?'<button class="btn pri" data-a="check">Check</button>':''}</div>${q.a!=null?fb(c):''}`}
+function matchV(){const q=Q;if(q.o>=q.c.length)return sum();
+ const b=(id,side,txt)=>`<button class="btn ${q.d.includes(id)?'good':q.sel===id&&side==='l'?'sel':q.w.includes(id)&&side==='r'?'bad':''}" data-a="${side==='l'?'ml':'mr'}" data-id="${id}" ${q.d.includes(id)?'disabled':''}>${esc(txt)}</button>`;
+ return `<div class="row"><button class="btn" data-a="exit">Exit</button><b style="flex:1">${esc(q.name)}</b><span class="mu">${q.o+q.d.length} of ${q.c.length} matched</span></div><div class="bar"><i style="width:${(q.o+q.d.length)/q.c.length*100}%"></i></div><p class="mu">Pick a word, then its translation.</p>
+<div class="grid" style="grid-template-columns:1fr 1fr"><div class="row" style="flex-direction:column;align-items:stretch">${q.L.map(id=>b(id,'l',cardOf(id).w)).join('')}</div><div class="row" style="flex-direction:column;align-items:stretch">${q.R.map(id=>b(id,'r',cardOf(id).t)).join('')}</div></div>`}
+function sum(){const q=Q;if(!q.fin){q.fin=1;S.ses++;save()}
+ const k=q.c.filter(c=>['k','l'].includes(q.res[c.id])).length,h=q.c.filter(c=>q.res[c.id]==='h');
+ return `<div class="card" style="text-align:center"><h1>Session complete</h1><div class="grid">${st('Knew it',k)}${st('Found difficult',h.length)}</div>${h.length?`<h3>Needs more practice</h3>${h.map(c=>`<div class="li"><b>${esc(c.w)}</b><span class="mu">${esc(c.t)}</span></div>`).join('')}`:'<p>Nothing needs extra practice this time.</p>'}<div class="row c"><button class="btn pri" data-a="restart">Practise again</button><button class="btn" data-a="go" data-v="dash">Dashboard</button></div></div>`}
+const stat=c=>isLearned(c)?'learned':(isHard(c)||isDue(c))?'review':seenC(c)?'learning':'new';
+function libList(){const t=F.q.toLowerCase();const r=all().filter(c=>(!t||(c.w+' '+c.t+' '+(c.ex||'')).toLowerCase().includes(t))&&(!F.c||c.topic===F.c)&&(!F.l||c.lv===F.l)&&(!F.s||(F.s==='new'?!seenC(c):F.s==='review'?(isHard(c)||isDue(c)):isLearned(c))));
+ return r.length?r.map(c=>`<div class="li"><span><b>${esc(c.w)}</b> <span class="mu">${esc(c.t)}</span><br><small class="mu">${esc(c.ex||'')}</small></span><span><span class="tag">${esc(c.topic||'')}</span><span class="tag">${c.lv}</span>${isLearned(c)?'<span class="tag">Learned</span>':''}${isHard(c)||isDue(c)?'<span class="tag">Needs review</span>':''}</span></div>`).join(''):'<p class="mu">No words match those filters.</p>'}
+function lib(){const tp=[...new Set(all().map(c=>c.topic).filter(Boolean))];
+ return `<h1>Vocabulary Library</h1><div class="row"><input id="fq" type="search" placeholder="Search words" value="${esc(F.q)}"><select id="fc"><option value="">All topics</option>${tp.map(t=>`<option ${F.c===t?'selected':''}>${esc(t)}</option>`).join('')}</select><select id="fl"><option value="">All levels</option>${['Beginner','Intermediate','Custom'].map(t=>`<option ${F.l===t?'selected':''}>${t}</option>`).join('')}</select><select id="fs">${[['','Any status'],['new','New'],['review','Needs review'],['learned','Learned']].map(o=>`<option value="${o[0]}" ${F.s===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div><div id="lr">${libList()}</div>`}
+function prog(){const A=all(),tot=Object.values(S.log).reduce((a,l)=>a+l.n,0),mast=A.filter(isLearned).length,acc=Object.values(S.log).reduce((a,l)=>a+l.ok,0);
+ const M={flash:'Flashcards',mc:'Multiple choice',type:'Type the translation',match:'Match pairs'};
+ const cal=[...Array(28)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-27+i);const l=S.log[td(d)];return `<i class="${l?(l.n>=S.goal?'b':'a'):''}" title="${td(d)}"></i>`}).join('');
+ const ach=[['First session','Complete one practice session',S.ses>=1],['Ten words','Learn 10 words',mast>=10],['Fifty answers','Answer 50 cards',tot>=50],['Three-day streak','Practise 3 days in a row',(S.best||0)>=3],['Week streak','Practise 7 days in a row',(S.best||0)>=7],['Sharp mind','90% accuracy over 30+ answers',tot>=30&&acc/tot>=.9]];
+ return `<h1>Progress</h1><div class="grid">${st('Words studied',A.filter(seenC).length)}${st('Words mastered',mast)}${st('Total answers',tot)}${st('Best streak',(S.best||0)+' days')}</div>
+<h3>Accuracy by mode</h3><div class="grid">${Object.keys(M).map(k=>{const m=S.modes[k];return st(M[k],m&&m.n?Math.round(m.ok/m.n*100)+'%':'No data yet')}).join('')}</div>
+<h3>Last 28 days</h3><div class="cal">${cal}</div><p class="mu">Dark squares mean you reached your daily goal. Missing a day is fine.</p>
+<h3>Achievements</h3><div class="grid">${ach.map(a=>`<div class="card" style="${a[2]?'':'opacity:.5'}"><b>${a[2]?'Earned: ':''}${a[0]}</b><p class="mu">${a[1]}</p></div>`).join('')}</div>`}
+function set(){return `<h1>Settings</h1><div class="card"><label>I speak</label>${sel('nat',LANGS,S.nat)}<label>I’m learning</label>${sel('tgt',LANGS,S.tgt)}<label>Level</label>${sel('lvl',LV,S.lvl)}<label>Daily goal (answers)</label><input id="goal" type="number" min="1" max="200" value="${S.goal}"><label>Theme</label>${sel('theme',{auto:'Match my device',light:'Light',dark:'Dark'},S.theme)}</div>
+<h3>Profile</h3><div class="card"><p class="mu">Signed in as <b>${esc((P.find(p=>p.id===cur)||{}).name)}</b>. Progress is saved separately for each profile in this browser.</p><div class="row"><button class="btn" data-a="signout">Sign out</button></div></div><h3>Your data</h3><div class="card"><p class="mu">Everything is stored in this browser. Export a backup, or paste one to restore it.</p><div class="row"><button class="btn" data-a="xp">Export progress</button></div>${E.x?`<textarea readonly rows="5" style="width:100%" onfocus="this.select()">${esc(E.x)}</textarea><p class="mu">Copy this text and keep it as a .json file.</p>`:''}
+<label>Import</label><textarea id="imp" rows="3" style="width:100%" placeholder="Paste exported JSON here"></textarea><div class="row"><input type="file" id="imf" accept=".json,application/json"><button class="btn" data-a="imp">Import</button></div>${E.im?`<p class="${E.imok?'':'no'}">${E.im}</p>`:''}
+<div class="row"><button class="btn no" data-a="reset">${CF==='r'?'Click again to erase everything':'Reset all data'}</button></div></div>`}
+function deckCard(d,i=0){const n=d.c.filter(isLearned).length,len=d.c.length,seen=d.c.some(seenC),done=len&&n===len,s=Math.round(len*7.5);
+ const cl=done||seen?'':['p','o','b'][i%3],bd=done?'✓ Completed':seen?Math.round(n/len*100)+'% learned':'🔥 New';
+ return `<div class="dk ${cl}" data-a="study" data-id="${d.id}"><b>${esc(d.name)}</b><span class="bdg">${bd}</span><button class="pl" data-a="pdeck" data-id="${d.id}">Practice</button><div class="ft"><span>☐ ${len} Cards</span><span>⏱ ${Math.floor(s/60)}min ${s%60}sec</span></div></div>`}
+function exp(){const b=built(),A=b.flatMap(d=>d.c),n=A.filter(isLearned).length,L=LANGS[S.tgt];
+ return `<div class="ex"><aside><div class="art"><svg viewBox="0 0 200 200" width="100%" role="img" aria-label="Book"><rect width="200" height="200" fill="#f9bf4a"/><g transform="rotate(-12 100 110)"><rect x="40" y="60" width="120" height="90" rx="6" fill="#3560b8"/><rect x="52" y="52" width="100" height="90" rx="4" fill="#fff"/><rect x="60" y="62" width="84" height="8" fill="#ee6a3e"/><text x="102" y="108" text-anchor="middle" font-size="14" font-weight="800" fill="#1d2d5a">${esc(L.toUpperCase())}</text></g><circle cx="48" cy="48" r="12" fill="#ee6a3e"/><circle cx="160" cy="44" r="9" fill="#2684ff"/></svg></div>
+<div class="row"><button class="btn pri" data-a="studyall">Study all</button><button class="btn" data-a="go" data-v="prac">Practice</button></div>
+<h2>${L} Vocabulary for Beginners</h2><p class="mu">${b.length?'Start your journey into '+L+' with this beginner-friendly collection of vocabulary decks.':'Create your own decks to start learning '+L+'.'}</p>
+<div class="row"><span class="tag">Category: Languages</span><span class="tag">${n} of ${A.length} learned</span></div>${note()}</aside>
+<div class="grid">${b.map(deckCard).join('')}<div class="dk add" data-a="go" data-v="my"><span style="font-size:28px">+</span>Add New Deck</div></div></div>`}
+const rvq=()=>!!(Q.rv&&Q.rv[Q.i]),qs=c=>rvq()?c.t:c.w,ans=c=>rvq()?c.w:c.t;
+function fb(c){const ok=Q.res[c.id]==='k';return `<div class="card ${ok?'good':'bad'}">${ok?'Correct!':'Answer: <b>'+esc(ans(c))+'</b>'}${c.ex?`<br><span class="mu">${esc(c.ex)} (${esc(c.exT)})</span>`:''}<div class="row"><button class="btn pri" data-a="nxt">Continue</button></div></div>`}
+function mcV(c){const q=Q,A=ans(c);if(!q.o){const rv=rvq(),seen=new Set([A]),d=[];for(const x of shuffle(all())){const v=rv?x.w:x.t;if(!seen.has(v)){seen.add(v);d.push(v)}if(d.length>=3)break}q.o=shuffle([A,...d])}
+ return `<div class="card" style="text-align:center"><div class="mu">Choose the translation</div><h2>${esc(qs(c))}</h2>${rvq()?'':`<small>${esc(c.pr)}</small>`}</div><div class="opts">${q.o.map((o,i)=>`<button class="btn opt ${q.a!=null?(o===A?'good':o===q.a?'bad':''):''}" data-a="pick" data-i="${i}" ${q.a!=null?'disabled':''}>${esc(o)}</button>`).join('')}</div>${q.a!=null?fb(c):''}`}
+function typeV(c){const q=Q;return `<div class="card" style="text-align:center"><div class="mu">Type the translation</div><h2>${esc(qs(c))}</h2>${rvq()?'':`<small>${esc(c.pr)}</small>`}</div><div class="row c"><input id="ans" autocomplete="off" placeholder="Your answer" ${q.a!=null?'disabled value="'+esc(q.a)+'"':''}>${q.a==null?'<button class="btn pri" data-a="check">Check</button>':''}</div>${q.a!=null?fb(c):''}`}
+const VIEWS={dash,my,exp,prac,lib,prog,set,ses};
+function adv(){Q.i++;Q.fl=0;Q.a=null;Q.o=null}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-a]');if(!a||a.disabled)return;const d=a.dataset,x=d.a,keep=CF;CF='';const q=Q;
+ const cf=k=>{if(keep===k)return true;CF=k;render();return false};
+ if(x==='flip'){q.fl=q.fl?0:1;const f=$('.fc');if(f)f.classList.toggle('fl');return}
+ if(x==='go'){V=d.v;E={};if(V!=='ses')Q=Q&&V==='ses'?Q:null}
+ else if(x==='start'){if(val('nat')===val('tgt')){E.err='Choose two different languages.'}else{S.setup=1;E={};save()}}
+ else if(x==='cont'){let p=all().filter(isDue);let id;if(!p.length){const dk=decks().find(k=>k.id===S.rec[0])||decks()[0];p=dk?dk.c:[];id=dk&&dk.id}return start('flash',p,'Daily review',id)}
+ else if(x==='study'){const dk=decks().find(k=>k.id===d.id);return start('flash',dk.c,dk.name,dk.id)}
+ else if(x==='studyall'){return start('flash',built().flatMap(k=>k.c),'All decks')}
+ else if(x==='pdeck'){PS.d=d.id;V='prac';Q=null}
+ else if(x==='pm'){const k=PS.d,dk=decks().find(z=>z.id===k);return start(d.m,pool(k),dk?dk.name:k==='mix'?'All words, mixed':'Difficult and due words',dk&&dk.id)}
+ else if(x==='prev'){q.i=Math.max(0,q.i-1);q.fl=0}
+ else if(x==='next'){adv()}
+ else if(x==='shuf'){shuffle(q.c);q.i=0;q.fl=0}
+ else if(x==='restart'){if(q.m==='match'){shuffle(q.c);initMatch()}else{q.i=0;q.fl=0;q.res={};q.a=null;q.o=null;q.fin=0}}
+ else if(x==='rate'){const c=q.c[q.i];if(d.r==='l'){grade(c,true,'flash');const r=S.rev[c.id];r.lrn=1;r.box=5;r.due=Date.now()+16*DAY;save()}else grade(c,d.r==='k','flash',d.r==='h');q.res[c.id]=d.r;adv()}
+ else if(x==='pick'){const c=q.c[q.i],o=q.o[+d.i];q.a=o;grade(c,o===ans(c),'mc');q.res[c.id]=o===ans(c)?'k':'h'}
+ else if(x==='check'){doCheck()}
+ else if(x==='nxt'){adv()}
+ else if(x==='exit'){Q=null;V='prac'}
+ else if(x==='ml'){q.sel=+d.id||d.id;q.w=[]}
+ else if(x==='mr'){if(q.sel==null)return;const id=d.id,s=q.sel;if(s===id){q.d.push(id);if(!q.bad[id]){q.res[id]='k';grade(cardOf(id),true,'match')}else q.res[id]='h';if(q.d.length===q.L.length){q.o+=6;if(q.o<q.c.length)mround()}}else{q.bad[s]=1;if(!q.res[s]){q.res[s]='h';grade(cardOf(s),false,'match')}q.w=[id]}q.sel=null}
+ else if(x==='adddeck'){const n=val('dn').trim();if(!n)E.err='Give the deck a name.';else if(S.cus.some(k=>k.name.toLowerCase()===n.toLowerCase()))E.err='You already have a deck with that name.';else{const id='u'+Date.now().toString(36);S.cus.push({id,name:n,topic:val('dt').trim(),c:[]});E={ed:id};save()}}
+ else if(x==='deldeck'){if(!cf('d'+d.id))return;const k=S.cus.find(z=>z.id===d.id);k.c.forEach(c=>delete S.rev[c.id]);S.cus=S.cus.filter(z=>z.id!==d.id);S.rec=S.rec.filter(z=>z!==d.id);if(E.ed===d.id)E={};save()}
+ else if(x==='edit'){E={ed:d.id}}
+ else if(x==='closeEd'){E={}}
+ else if(x==='savecard'){const k=S.cus.find(z=>z.id===E.ed),w=val('cw').trim(),t=val('ct').trim();
+  if(!w||!t)E.err='Enter both a word and its translation.';
+  else if(k.c.some((c,i)=>i!==E.ec&&c.w.toLowerCase()===w.toLowerCase()))E.err='That word is already in this deck.';
+  else{const o={w,t,ex:val('cx').trim(),exT:val('cy').trim()};if(E.ec!=null)Object.assign(k.c[E.ec],o);else k.c.push({id:'k'+Date.now().toString(36)+Math.floor(Math.random()*1e4),...o});E.ec=null;E.err='';save()}}
+ else if(x==='editcard'){E.ec=+d.i;E.err=''}
+ else if(x==='delcard'){if(!cf('c'+d.i))return;const k=S.cus.find(z=>z.id===E.ed),c=k.c[+d.i];delete S.rev[c.id];k.c.splice(+d.i,1);E.ec=null;save()}
+ else if(x==='signin'){const p=P.find(z=>z.id===d.id);if(p.pin){E={pid:p.id}}else return enter(p.id)}
+ else if(x==='pinok'){const p=P.find(z=>z.id===E.pid);hash(val('lpin')).then(h=>{if(h===p.pin)enter(p.id);else{E.lm='Wrong PIN.';render()}});return}
+ else if(x==='mkprof'){const n=val('ln').trim(),pn=val('lp').trim();
+  if(!n)E.lm='Enter a name.';else if(P.some(z=>z.name.toLowerCase()===n.toLowerCase()))E.lm='That name is already used.';else if(pn&&!/^\d{4,12}$/.test(pn))E.lm='The PIN must be 4 to 12 digits.';
+  else{hash(pn).then(h=>{const id='p'+Date.now().toString(36);P.push({id,name:n,pin:pn?h:''});savP();enter(id)});return}}
+ else if(x==='signout'){cur=null;try{localStorage.removeItem('lf_c')}catch(e){}E={};Q=null;V='dash'}
+ else if(x==='xp'){E.x=JSON.stringify(S)}
+ else if(x==='imp'){try{const o=JSON.parse(val('imp'));if(!o||typeof o!=='object'||!o.rev||!Array.isArray(o.cus))throw 0;S={...def(),...o,setup:1};save();E={im:'Progress imported.',imok:1}}catch(err){E={im:'That is not a valid LinguaFlow export.'}}}
+ else if(x==='reset'){if(!cf('r'))return;S=def();save();V='dash';Q=null;E={}}
+ render()});
+const savP=()=>{try{localStorage.setItem('lf_p',JSON.stringify(P))}catch(e){}};
+const hash=async s=>{try{return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('lf:'+s)))].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){return 'x:'+s}};
+function enter(id){cur=id;try{localStorage.setItem('lf_c',id)}catch(e){}load(id);E={};V='dash';Q=null;render()}
+function login(){return `<div class="card" style="max-width:440px;margin:7vh auto"><h1>LinguaFlow</h1>${P.length?`<p class="mu">Choose a profile to continue.</p>${P.map(p=>`<div class="li"><b>${esc(p.name)}${p.pin?' 🔒':''}</b><button class="btn pri" data-a="signin" data-id="${p.id}">Sign in</button></div>`).join('')}${E.pid?`<div class="row"><input id="lpin" type="password" inputmode="numeric" placeholder="PIN" autocomplete="off"><button class="btn pri" data-a="pinok">Unlock</button></div>`:''}`:'<p class="mu">Create a profile to save your progress on this device.</p>'}${E.lm?`<p class="no">${E.lm}</p>`:''}<h3>New profile</h3><div class="row"><input id="ln" placeholder="Name" maxlength="24"><input id="lp" type="password" inputmode="numeric" placeholder="PIN (optional)" maxlength="12"><button class="btn" data-a="mkprof">Create</button></div><p class="mu">Profiles are stored in this browser only. A PIN keeps other people on this device out, but it is not a secure online account.</p></div>`}
+function doCheck(){const q=Q,c=q.c[q.i],v=val('ans').trim();if(!v)return;q.a=v;const rv=rvq(),ok=same(v,ans(c))||(rv?(c.pr?same(v,c.pr):false):(c.tp?same(v,c.tp):false));grade(c,ok,'type');q.res[c.id]=ok?'k':'h';render()}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='gs'){F={q:e.target.value,c:'',l:'',s:''};V='lib';Q=null;E={};return render()}if(e.key!=='Enter'||V!=='ses'||!Q)return;if(Q.m==='type'&&Q.a==null)doCheck();else if(Q.a!=null&&Q.m!=='flash'&&Q.m!=='match'){e.preventDefault();adv();render()}});
+document.addEventListener('input',e=>{if(e.target.id==='fq'){F.q=e.target.value;$('#lr').innerHTML=libList()}});
+document.addEventListener('change',e=>{const t=e.target,id=t.id;
+ if(id==='pn'){PS.n=+t.value;return}if(id==='pr'){PS.r=t.value;return}if(id==='pd'){PS.d=t.value;return}
+ if(['fc','fl','fs'].includes(id)){F[id==='fc'?'c':id==='fl'?'l':'s']=t.value;$('#lr').innerHTML=libList();return}
+ if(['nat','tgt','lvl','theme'].includes(id)){S[id]=t.value;save();if(S.setup)render();else document.documentElement.dataset.theme=''}
+ if(id==='goal'){S.goal=Math.max(1,Math.min(200,parseInt(t.value)||10));save();render()}
+ if(id==='imf'&&t.files[0]){const r=new FileReader();r.onload=()=>{$('#imp').value=r.result};r.readAsText(t.files[0])}});
+render();
+</script></body></html>
